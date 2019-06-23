@@ -84,6 +84,7 @@ function createShape(points, options)
     return
   end
 
+  options = options or {}
   local shape = {
     name = tostring(options.name) or nil,
     points = points,
