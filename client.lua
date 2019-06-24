@@ -1,3 +1,5 @@
+PolyZone = {}
+
 local function _isLeft(p0, p1, p2)
   return ((p1.x - p0.x) * (p2.y - p0.y)) - ((p2.x - p0.x) * (p1.y - p0.y))
 end
@@ -79,7 +81,7 @@ local function _calculateShape(shape)
   shape.center = (shape.max + shape.min) / 2
 end
 
-function createShape(points, options)
+function PolyZone:Create(points, options)
   if not points or #points <= 2 then
     return
   end
@@ -96,10 +98,12 @@ function createShape(points, options)
     maxZ = tonumber(options.maxZ) or nil
   }
   _calculateShape(shape)
-
-  function shape.isInside(point)
-    return _pointInPoly(point, shape)
-  end
+  setmetatable(shape, self)
+  self.__index = self
 
   return shape
+end
+
+function PolyZone:isInside(point)
+  return _pointInPoly(point, self)
 end
