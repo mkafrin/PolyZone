@@ -21,7 +21,7 @@ local function _wn_inner_loop(p0, p1, p2, wn)
   return wn
 end
 
--- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
+
 local function _pointInPoly(point, poly)
   if poly.minZ and poly.maxZ and (point.z < poly.minZ or point.z >= poly.maxZ) then
     return false
@@ -35,6 +35,16 @@ local function _pointInPoly(point, poly)
     return false
   end
 
+  -- Returns true if the grid cell associated with the point is entirely inside the poly
+--[[   local gridPosX = point.x - poly.min.x
+  local gridPosY = point.y - poly.min.y
+  local gridCellX = math.floor((gridPosX / poly.size.x) * poly.gridDivisions)
+  local gridCellY = math.floor((gridPosY / poly.size.y) * poly.gridDivisions)
+  if (poly.grid[gridCellY][gridCellX]) then
+    return true
+  end ]]
+
+  -- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
   poly = poly.points
   local n = #poly
   local wn = 0 -- winding number counter
@@ -49,6 +59,14 @@ local function _pointInPoly(point, poly)
   -- the point is outside only when this winding number wn===0, otherwise it's inside
   return wn ~= 0
 end
+
+
+local function _createGrid(shape)
+-- TODO: Calculate for each grid cell whether it is entirely inside the polygon
+
+-- return: 2D array of booleans
+end
+
 
 local function _calculateShape(shape)
   local totalX = 0.0
@@ -79,6 +97,7 @@ local function _calculateShape(shape)
   shape.min = vector2(minX, minY)
   shape.size = shape.max - shape.min
   shape.center = (shape.max + shape.min) / 2
+  shape.grid = _createGrid(shape)
 end
 
 function PolyZone:Create(points, options)
@@ -95,7 +114,8 @@ function PolyZone:Create(points, options)
     max = vector2(0, 0),
     min = vector2(0, 0),
     minZ = tonumber(options.minZ) or nil,
-    maxZ = tonumber(options.maxZ) or nil
+    maxZ = tonumber(options.maxZ) or nil,
+    gridDivisions = tonumber(options.gridDivisions) or 100
   }
   _calculateShape(shape)
   setmetatable(shape, self)
