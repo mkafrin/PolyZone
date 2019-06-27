@@ -1,34 +1,38 @@
 PolyZone = {}
 
--- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
-local function _windingNumber(point, poly)
-  local function _isLeft(p0, p1, p2)
-    return ((p1.x - p0.x) * (p2.y - p0.y)) - ((p2.x - p0.x) * (p1.y - p0.y))
-  end
-  
-  local function _wn_inner_loop(p0, p1, p2, wn)
-    if (p0.y <= p2.y) then
-      if (p1.y > p2.y) then
-        if (_isLeft(p0, p1, p2) > 0) then
-          return wn + 1
-        end
-      end
-    else
-      if (p1.y <= p2.y) then
-        if (_isLeft(p0, p1, p2) < 0) then
-          return wn - 1
-        end
+
+local function _isLeft(p0, p1, p2)
+  local p0x = p0.x
+  local p0y = p0.y
+  return ((p1.x - p0x) * (p2.y - p0y)) - ((p2.x - p0x) * (p1.y - p0y))
+end
+
+
+local function _wn_inner_loop(p0, p1, p2, wn)
+  local p2y = p2.y
+  if (p0.y <= p2y) then
+    if (p1.y > p2y) then
+      if (_isLeft(p0, p1, p2) > 0) then
+        return wn + 1
       end
     end
-    return wn
+  else
+    if (p1.y <= p2y) then
+      if (_isLeft(p0, p1, p2) < 0) then
+        return wn - 1
+      end
+    end
   end
+  return wn
+end
 
-  poly = poly.points
-  local n = #poly
+
+-- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
+local function _windingNumber(point, poly)
   local wn = 0 -- winding number counter
 
   -- loop through all edges of the polygon
-  for i = 1, n - 1 do
+  for i = 1, #poly - 1 do
     wn = _wn_inner_loop(poly[i], poly[i + 1], point, wn)
   end
   -- test last point to first point, completing the polygon
@@ -40,32 +44,35 @@ end
 
 
 local function _pointInPoly(point, poly)
-  if point.z < poly.minZ or point.z >= poly.maxZ then
+  if point.z < poly.minZ or point.z > poly.maxZ then
     return false
   end
 
-  -- Checks if point is within the bounding circle of the polygon before proceeding
+  local x = point.x
+  local y = point.y
   local min = poly.min
   local max = poly.max
-  if (point.x > min.x and 
-      point.x < max.x and
-      point.y > min.y and
-      point.y < max.y) == false then
-    return false
+
+  -- Checks if point is within the bounding circle of the polygon before proceeding
+  if x < min.x or
+     x > max.x or
+     y < min.y or
+     y > max.y then
+      return false
   end
 
   -- Returns true if the grid cell associated with the point is entirely inside the poly
   local gridDivisions = poly.gridDivisions
   local size = poly.size
-  local gridPosX = point.x - min.x
-  local gridPosY = point.y - min.y
+  local gridPosX = x - min.x
+  local gridPosY = y - min.y
   local gridCellX = (gridPosX * gridDivisions) // size.x
   local gridCellY = (gridPosY * gridDivisions) // size.y
   if (poly.grid[gridCellY + 1][gridCellX + 1]) then
     return true
   end
 
-  return _windingNumber(point, poly)
+  return _windingNumber(point, poly.points)
 end
 
 -- Detects intersection between two lines
@@ -111,7 +118,7 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
   -- If none of the points of the grid cell are in the polygon, the grid cell can't be in it
   local isOnePointInPoly = false
   for i=1, #gridCellPoints do
-    if _windingNumber(gridCellPoints[i], poly) then
+    if _windingNumber(gridCellPoints[i], poly.points) then
       isOnePointInPoly = true
       break
     end
