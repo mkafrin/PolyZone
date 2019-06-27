@@ -40,7 +40,7 @@ end
 
 
 local function _pointInPoly(point, poly)
-  if poly.minZ and poly.maxZ and (point.z < poly.minZ or point.z >= poly.maxZ) then
+  if point.z < poly.minZ or point.z >= poly.maxZ then
     return false
   end
 
@@ -212,9 +212,9 @@ function PolyZone:Create(points, options)
     size = vector2(0, 0),
     max = vector2(0, 0),
     min = vector2(0, 0),
-    minZ = tonumber(options.minZ) or nil,
-    maxZ = tonumber(options.maxZ) or nil,
-    gridDivisions = tonumber(options.gridDivisions) or 30
+    minZ = tonumber(options.minZ) or math.mininteger,
+    maxZ = tonumber(options.maxZ) or math.maxinteger,
+    gridDivisions = tonumber(options.gridDivisions) or 15
   }
   _calculateShape(shape)
   setmetatable(shape, self)
@@ -228,11 +228,11 @@ end
 
 
 -- Debug drawing all grid cells that are completly within the polygon
-Citizen.CreateThread(function()
+--[[ Citizen.CreateThread(function()
   while true do
    for i=1,#gridCellsInsidePoly do
      PolyZone.draw(gridCellsInsidePoly[i], {lineSepDist = 0.0})
    end
    Citizen.Wait(0)
   end
- end)
+ end) ]]
