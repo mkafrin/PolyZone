@@ -1,4 +1,4 @@
-local function _draw(shape, opt)
+local function _drawPoly(shape, opt)
   opt = opt or {}
   local zDrawDist = 75.0
   local plyPed = PlayerPedId()
@@ -21,10 +21,56 @@ local function _draw(shape, opt)
   end
 end
 
-function PolyZone:draw(opt)
-  _draw(self, opt)
+
+-- Debug drawing all grid cells that are completly within the polygon
+local function _drawGrid(poly)
+  local minZ = poly.minZ
+  local maxZ = poly.maxZ
+  if minZ == math.mininteger or maxZ == math.maxinteger then
+    local plyPed = PlayerPedId()
+    local plyPos = GetEntityCoords(plyPed)
+    local zBool, zGround = GetGroundZFor_3dCoord(plyPos.x, plyPos.y, plyPos.z, 1)
+    if zBool then
+      minZ = zGround
+      maxZ = zGround + 50.0
+    else
+      minZ = plyPos.z - 75.0
+      maxZ = plyPos.z + 75.0
+    end
+  end
+
+  local gridCellsInsidePoly = poly.gridCellsInsidePoly
+  for i=1,#gridCellsInsidePoly do
+    local shape = gridCellsInsidePoly[i]
+    shape.minZ = minZ
+    shape.maxZ = maxZ
+    PolyZone.drawPoly(shape, {lineSepDist = 0.0})
+  end
 end
 
-function PolyZone.draw(shape, opt)
-  _draw(shape, opt)
+
+function PolyZone.drawPoly(shape, opt)
+  _drawPoly(shape, opt)
 end
+
+
+function startDrawPoly(shape)
+  Citizen.CreateThread(function()
+    while true do
+      _drawPoly(shape)
+      Citizen.Wait(0)
+    end
+  end)
+end
+AddEventHandler("PolyZone:startDrawPoly", startDrawPoly)
+
+
+function startDrawGrid(shape)
+  Citizen.CreateThread(function()
+    while true do
+      _drawGrid(shape)
+      Citizen.Wait(0)
+    end
+  end)
+end
+AddEventHandler("PolyZone:startDrawGrid", startDrawGrid)

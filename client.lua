@@ -108,7 +108,6 @@ local function _calculateGridCellPoints(cellX, cellY, poly)
 end
 
 
-local gridCellsInsidePoly = {}
 local function _isGridCellInsidePoly(cellX, cellY, poly)
   gridCellPoints = _calculateGridCellPoints(cellX, cellY, poly)
   local polyPoints = {table.unpack(poly.points)}
@@ -136,7 +135,9 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
       end
     end
   end
-  gridCellsInsidePoly[#gridCellsInsidePoly + 1] = {points = gridCellPoints}
+  if poly.gridCellsInsidePoly then
+    poly.gridCellsInsidePoly[#poly.gridCellsInsidePoly + 1] = {points = gridCellPoints}
+  end
   return true
 end
 
@@ -221,9 +222,12 @@ function PolyZone:Create(points, options)
     min = vector2(0, 0),
     minZ = tonumber(options.minZ) or math.mininteger,
     maxZ = tonumber(options.maxZ) or math.maxinteger,
-    gridDivisions = tonumber(options.gridDivisions) or 25
+    gridDivisions = tonumber(options.gridDivisions) or 25,
+    gridCellsInsidePoly = options.debugGrid and {} or nil
   }
   _calculateShape(shape)
+  if options.debugPoly then TriggerEvent("PolyZone:startDrawPoly", shape) end
+  if options.debugGrid then TriggerEvent("PolyZone:startDrawGrid", shape) end
   setmetatable(shape, self)
   self.__index = self
   return shape
@@ -232,22 +236,3 @@ end
 function PolyZone:isInside(point)
   return _pointInPoly(point, self)
 end
-
-
--- Debug drawing all grid cells that are completly within the polygon
---[[ Citizen.CreateThread(function()
-  while true do
-    local plyPed = PlayerPedId()
-    local plyPos = GetEntityCoords(plyPed)
-    local zBool, zGround = GetGroundZFor_3dCoord(plyPos.x, plyPos.y, plyPos.z, 1)
-    for i=1,#gridCellsInsidePoly do
-      local shape = gridCellsInsidePoly[i]
-      if zBool then
-        shape.minZ = zGround
-        shape.maxZ = zGround + 50.0
-      end
-      PolyZone.draw(shape, {lineSepDist = 0.0})
-    end
-    Citizen.Wait(0)
-  end
-end) ]]

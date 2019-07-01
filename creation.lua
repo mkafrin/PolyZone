@@ -55,7 +55,7 @@ end)
 function drawThread()
   Citizen.CreateThread(function()
     while drawShape do
-      PolyZone.draw(createdShape)
+      PolyZone.drawPoly(createdShape)
       Citizen.Wait(1)
     end
   end)
