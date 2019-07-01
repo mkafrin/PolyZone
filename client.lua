@@ -1,5 +1,59 @@
 PolyZone = {}
 
+local function _drawPoly(shape, opt)
+  opt = opt or {}
+  local zDrawDist = 75.0
+  local plyPed = PlayerPedId()
+  local plyPos = GetEntityCoords(plyPed)
+  local minZ = shape.minZ or plyPos.z - zDrawDist
+  local maxZ = shape.maxZ or plyPos.z + zDrawDist
+  for i=1, #shape.points do
+    DrawLine(shape.points[i].x, shape.points[i].y, minZ, shape.points[i].x, shape.points[i].y, maxZ, 255, 0, 0, 255)
+    if i < #shape.points then
+      for j = minZ, maxZ, opt.lineSepDist or 5.0 do
+        DrawLine(shape.points[i].x, shape.points[i].y, j, shape.points[i+1].x, shape.points[i+1].y, j, 0, 255, 0, 255)
+      end
+    end
+  end
+
+  if #shape.points > 2 then
+    for j = minZ, maxZ, opt.lineSepDist or 5.0 do
+      DrawLine(shape.points[#shape.points].x, shape.points[#shape.points].y, j, shape.points[1].x, shape.points[1].y, j, 0, 255, 0, 255)
+    end
+  end
+end
+
+
+function PolyZone.draw(shape, opt)
+  _drawPoly(shape, opt)
+end
+
+-- Debug drawing all grid cells that are completly within the polygon
+local function _drawGrid(poly)
+  local minZ = poly.minZ
+  local maxZ = poly.maxZ
+  if not minZ or not maxZ then
+    local plyPed = PlayerPedId()
+    local plyPos = GetEntityCoords(plyPed)
+    local zBool, zGround = GetGroundZFor_3dCoord(plyPos.x, plyPos.y, plyPos.z, 1)
+    if zBool then
+      minZ = zGround
+      maxZ = zGround + 50.0
+    else
+      minZ = plyPos.z - 75.0
+      maxZ = plyPos.z + 75.0
+    end
+  end
+
+  local gridCellsInsidePoly = poly.gridCellsInsidePoly
+  for i=1,#gridCellsInsidePoly do
+    local shape = gridCellsInsidePoly[i]
+    shape.minZ = minZ
+    shape.maxZ = maxZ
+    _drawPoly(shape, {lineSepDist = 0.0})
+  end
+end
+
 
 local function _isLeft(p0, p1, p2)
   local p0x = p0.x
@@ -44,7 +98,9 @@ end
 
 
 local function _pointInPoly(point, poly)
-  if point.z < poly.minZ or point.z > poly.maxZ then
+  local minZ = poly.minZ
+  local maxZ = poly.maxZ
+  if minZ and maxZ and (point.z < minZ or point.z > maxZ) then
     return false
   end
 
@@ -62,14 +118,14 @@ local function _pointInPoly(point, poly)
   end
 
   -- Returns true if the grid cell associated with the point is entirely inside the poly
-  local gridDivisions = poly.gridDivisions
-  local size = poly.size
-  local gridPosX = x - min.x
-  local gridPosY = y - min.y
-  local gridCellX = (gridPosX * gridDivisions) // size.x
-  local gridCellY = (gridPosY * gridDivisions) // size.y
-  if (poly.grid[gridCellY + 1][gridCellX + 1]) then
-    return true
+  if poly.useGrid then
+    local gridDivisions = poly.gridDivisions
+    local size = poly.size
+    local gridPosX = x - min.x
+    local gridPosY = y - min.y
+    local gridCellX = (gridPosX * gridDivisions) // size.x
+    local gridCellY = (gridPosY * gridDivisions) // size.y
+    if (poly.grid[gridCellY + 1][gridCellX + 1]) then return true end
   end
 
   return _windingNumber(point, poly.points)
@@ -142,7 +198,6 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
 end
 
 
-local gridArea = 0.0
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
 local function _createGrid(shape)
   local isInside = {};
@@ -152,12 +207,11 @@ local function _createGrid(shape)
     isInside[y] = {}
     for x=1, shape.gridDivisions do
       if _isGridCellInsidePoly(x-1, y-1, shape) then
-        gridArea = gridArea + gridCellWidth * gridCellHeight
+        shape.gridArea = shape.gridArea + gridCellWidth * gridCellHeight
         isInside[y][x] = true
       end
     end
   end
-  shape.gridArea = gridArea
   return isInside
 end
 
@@ -173,7 +227,7 @@ function _calculatePolygonArea(ps)
 end
 
 
-local function _calculateShape(shape)
+local function _calculateShape(shape, options)
   local totalX = 0.0
   local totalY = 0.0
   local maxX
@@ -203,9 +257,33 @@ local function _calculateShape(shape)
   shape.size = shape.max - shape.min
   shape.center = (shape.max + shape.min) / 2
   shape.area = _calculatePolygonArea(shape.points)
-  shape.grid = _createGrid(shape)
-  shape.gridCoverage = shape.gridArea / shape.area;
+  if shape.useGrid then
+    shape.grid = _createGrid(shape)
+    shape.gridCoverage = shape.gridArea / shape.area;
+    print(shape.gridCoverage)
+  end
 end
+
+
+function _initDebug(shape, options)
+  if options.debugPoly then
+    Citizen.CreateThread(function()
+      while true do
+        _drawPoly(shape)
+        Citizen.Wait(0)
+      end
+    end)
+  end
+  if options.debugGrid and shape.useGrid then
+    Citizen.CreateThread(function()
+      while true do
+        _drawGrid(shape)
+        Citizen.Wait(0)
+      end
+    end)
+  end
+end
+
 
 function PolyZone:Create(points, options)
   if not points or #points <= 2 then
@@ -220,14 +298,15 @@ function PolyZone:Create(points, options)
     size = vector2(0, 0),
     max = vector2(0, 0),
     min = vector2(0, 0),
-    minZ = tonumber(options.minZ) or math.mininteger,
-    maxZ = tonumber(options.maxZ) or math.maxinteger,
-    gridDivisions = tonumber(options.gridDivisions) or 25,
-    gridCellsInsidePoly = options.debugGrid and {} or nil
+    minZ = tonumber(options.minZ) or nil,
+    maxZ = tonumber(options.maxZ) or nil,
+    useGrid = options.useGrid or true,
+    gridDivisions = tonumber(options.gridDivisions) or 30,
+    gridCellsInsidePoly = (options.debugGrid and shape.useGrid) and {} or nil,
+    gridArea = 0.0
   }
-  _calculateShape(shape)
-  if options.debugPoly then TriggerEvent("PolyZone:startDrawPoly", shape) end
-  if options.debugGrid then TriggerEvent("PolyZone:startDrawGrid", shape) end
+  _calculateShape(shape, options)
+  _initDebug(shape, options)
   setmetatable(shape, self)
   self.__index = self
   return shape

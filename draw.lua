@@ -3,8 +3,8 @@ local function _drawPoly(shape, opt)
   local zDrawDist = 75.0
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
-  local minZ = shape.minZ ~= math.mininteger and shape.minZ or plyPos.z - zDrawDist
-  local maxZ = shape.maxZ ~= math.maxinteger and shape.maxZ or plyPos.z + zDrawDist
+  local minZ = shape.minZ or plyPos.z - zDrawDist
+  local maxZ = shape.maxZ or plyPos.z + zDrawDist
   for i=1, #shape.points do
     DrawLine(shape.points[i].x, shape.points[i].y, minZ, shape.points[i].x, shape.points[i].y, maxZ, 255, 0, 0, 255)
     if i < #shape.points then
@@ -26,7 +26,7 @@ end
 local function _drawGrid(poly)
   local minZ = poly.minZ
   local maxZ = poly.maxZ
-  if minZ == math.mininteger or maxZ == math.maxinteger then
+  if not minZ or not maxZ then
     local plyPed = PlayerPedId()
     local plyPos = GetEntityCoords(plyPed)
     local zBool, zGround = GetGroundZFor_3dCoord(plyPos.x, plyPos.y, plyPos.z, 1)
