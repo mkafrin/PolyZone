@@ -197,8 +197,10 @@ end
 
 
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
-local function _createGrid(shape)
-  local isInside = {};
+local function _createGrid(shape, options)
+  shape.gridArea = 0.0
+  if options.debugGrid then shape.gridCellsInsidePoly = {} end
+  local isInside = {}
   local gridCellWidth = shape.size.x / shape.gridDivisions
   local gridCellHeight = shape.size.y / shape.gridDivisions
   for y=1, shape.gridDivisions do
@@ -256,8 +258,8 @@ local function _calculateShape(shape, options)
   shape.center = (shape.max + shape.min) / 2
   shape.area = _calculatePolygonArea(shape.points)
   if shape.useGrid then
-    shape.grid = _createGrid(shape)
-    shape.gridCoverage = shape.gridArea / shape.area;
+    shape.grid = _createGrid(shape, options)
+    shape.gridCoverage = shape.gridArea / shape.area
   end
 end
 
@@ -288,7 +290,6 @@ function PolyZone:Create(points, options)
   end
 
   options = options or {}
-  local useGrid = options.useGrid or true
   local shape = {
     name = tostring(options.name) or nil,
     points = points,
@@ -298,10 +299,8 @@ function PolyZone:Create(points, options)
     min = vector2(0, 0),
     minZ = tonumber(options.minZ) or nil,
     maxZ = tonumber(options.maxZ) or nil,
-    useGrid = useGrid,
+    useGrid = options.useGrid or true,
     gridDivisions = tonumber(options.gridDivisions) or 30,
-    gridCellsInsidePoly = (options.debugGrid and useGrid) and {} or nil,
-    gridArea = 0.0
   }
   _calculateShape(shape, options)
   _initDebug(shape, options)
