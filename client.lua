@@ -1,5 +1,6 @@
 PolyZone = {}
 
+
 local function _drawPoly(shape, opt)
   opt = opt or {}
   local zDrawDist = 75.0
@@ -43,12 +44,12 @@ local function _drawGrid(poly)
     maxZ = plyPos.z - 75.0
   end
 
-  local gridCellsInsidePoly = poly.gridCellsInsidePoly
-  for i=1,#gridCellsInsidePoly do
-    local shape = gridCellsInsidePoly[i]
-    shape.minZ = minZ
-    shape.maxZ = maxZ
-    _drawPoly(shape, {lineSepDist = 0.0})
+  local lines = poly.lines
+  for i=1, #lines do
+    local line = lines[i]
+    local min = line.min
+    local max = line.max
+    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, 0, 255, 0, 255)
   end
 end
 
@@ -116,7 +117,7 @@ local function _pointInPoly(point, poly)
   end
 
   -- Returns true if the grid cell associated with the point is entirely inside the poly
-  if poly.useGrid then
+  if poly.grid then
     local gridDivisions = poly.gridDivisions
     local size = poly.size
     local gridPosX = x - min.x
@@ -147,8 +148,8 @@ end
 
 -- Calculates the points of the rectangle that make up the grid cell at grid position (cellX, cellY)
 local function _calculateGridCellPoints(cellX, cellY, poly)
-  local gridCellWidth = poly.size.x / poly.gridDivisions
-  local gridCellHeight = poly.size.y / poly.gridDivisions
+  local gridCellWidth = poly.gridCellWidth
+  local gridCellHeight = poly.gridCellHeight
   local x = cellX * gridCellWidth
   local y = cellY * gridCellHeight
   -- poly.min must be added to all the points, in order to shift the grid cell to poly's starting position
@@ -171,9 +172,15 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
   -- If none of the points of the grid cell are in the polygon, the grid cell can't be in it
   local isOnePointInPoly = false
   for i=1, #gridCellPoints do
-    if _windingNumber(gridCellPoints[i], poly.points) then
+    local cellPoint = gridCellPoints[i]
+    local x = cellPoint.x
+    local y = cellPoint.y
+    if _windingNumber(cellPoint, poly.points) then
       isOnePointInPoly = true
-      break
+      if not poly.gridXPoints[x] then poly.gridXPoints[x] = {} end
+      if not poly.gridYPoints[y] then poly.gridYPoints[y] = {} end
+      poly.gridXPoints[x][y] = true
+      poly.gridYPoints[y][x] = true
     end
   end
   if isOnePointInPoly == false then
@@ -189,40 +196,103 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
       end
     end
   end
-  if poly.gridCellsInsidePoly then
-    poly.gridCellsInsidePoly[#poly.gridCellsInsidePoly + 1] = {points = gridCellPoints}
-  end
   return true
+end
+
+
+local function _calculateLinesForDrawingGrid(shape)
+  local lines = {}
+  for x, tbl in pairs(shape.gridXPoints) do
+    local count = 1
+    local yValues = {}
+    -- Turn dict/set of values into array
+    for y, _ in pairs(tbl) do yValues[count] = y; count = count + 1 end
+    if count >= 2 then
+      table.sort(yValues)
+      local minY = yValues[1]
+      local lastY = yValues[1]
+      for i=1, #yValues do
+        local y = yValues[i]
+        -- Checks for breaks in the grid. If the distance between the last value and the current one
+        -- is greater than the size of a grid cell, that means the line between them must go outside the polygon.
+        -- Therefore, a line must be created between minY and the lastY, and a new line started at the current y
+        if y - lastY > shape.gridCellHeight + 0.01 then
+          lines[#lines+1] = {min=vector2(x, minY), max=vector2(x, lastY)}
+          minY = y
+        elseif i == #yValues then
+          -- If at the last point, create a line between minY and the last point
+          lines[#lines+1] = {min=vector2(x, minY), max=vector2(x, y)}
+        end
+        lastY = y
+      end
+    end
+  end
+  -- Setting nil to allow the GC to clear it out of memory, since we no longer need this
+  shape.gridXPoints = nil
+
+  -- Exactly the same as above, but for gridYPoints instead of gridXPoints
+  for y, tbl in pairs(shape.gridYPoints) do
+    local count = 1
+    local xValues = {}
+    for x, _ in pairs(tbl) do xValues[count] = x; count = count + 1 end
+    if count >= 2 then
+      table.sort(xValues)
+      local minX = xValues[1]
+      local lastX = xValues[1]
+      for i=1, #xValues do
+        local x = xValues[i]
+        if x - lastX > shape.gridCellWidth + 0.01 then
+          lines[#lines+1] = {min=vector2(minX, y), max=vector2(lastX, y)}
+          minX = x
+        elseif i == #xValues then
+          lines[#lines+1] = {min=vector2(minX, y), max=vector2(x, y)}
+        end
+        lastX = x
+      end
+    end
+  end
+  shape.gridYPoints = nil
+  return lines
 end
 
 
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
 local function _createGrid(shape, options)
-  shape.gridArea = 0.0
-  if options.debugGrid then shape.gridCellsInsidePoly = {} end
+  Citizen.CreateThread(function()
+  -- Calculate all grid cells that are entirely inside the polygon
   local isInside = {}
-  local gridCellWidth = shape.size.x / shape.gridDivisions
-  local gridCellHeight = shape.size.y / shape.gridDivisions
   for y=1, shape.gridDivisions do
+    Citizen.Wait(25)
     isInside[y] = {}
     for x=1, shape.gridDivisions do
       if _isGridCellInsidePoly(x-1, y-1, shape) then
-        shape.gridArea = shape.gridArea + gridCellWidth * gridCellHeight
+        shape.gridArea = shape.gridArea + shape.gridCellWidth * shape.gridCellHeight
         isInside[y][x] = true
       end
     end
   end
-  return isInside
+  shape.grid = isInside
+  shape.gridCoverage = shape.gridArea / shape.area
+
+  if options.debugGrid then
+    Citizen.CreateThread(function()
+      shape.lines = _calculateLinesForDrawingGrid(shape)
+      -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
+      collectgarbage("collect")
+    end)
+  end
+  
+  end)
 end
 
 
 -- https://rosettacode.org/wiki/Shoelace_formula_for_polygonal_area#Lua
-function _calculatePolygonArea(ps)
+function _calculatePolygonArea(points)
   local function det2(i,j)
-    return ps[i].x*ps[j].y-ps[j].x*ps[i].y
+    return points[i].x*points[j].y-points[j].x*points[i].y
   end
-  local sum = #ps>2 and det2(#ps,1) or 0
-  for i=1,#ps-1 do sum = sum + det2(i,i+1)end
+  local sum = #points>2 and det2(#points,1) or 0
+  for i=1,#points-1 do sum = sum + det2(i,i+1)end
   return math.abs(0.5 * sum)
 end
 
@@ -258,29 +328,41 @@ local function _calculateShape(shape, options)
   shape.center = (shape.max + shape.min) / 2
   shape.area = _calculatePolygonArea(shape.points)
   if shape.useGrid then
-    shape.grid = _createGrid(shape, options)
-    shape.gridCoverage = shape.gridArea / shape.area
+    shape.gridXPoints = {}
+    shape.gridYPoints = {}
+    shape.lines = {}
+    shape.gridArea = 0.0
+    shape.gridCellWidth = shape.size.x / shape.gridDivisions
+    shape.gridCellHeight = shape.size.y / shape.gridDivisions
+    _createGrid(shape, options)
   end
 end
 
 
 function _initDebug(shape, options)
-  if options.debugPoly or options.debugGrid then
-    Citizen.CreateThread(function()
-      while true do
-        _drawPoly(shape, {drawPoints=true})
-        Citizen.Wait(0)
-      end
-    end)
-  end
-  if options.debugGrid and shape.useGrid then
-    Citizen.CreateThread(function()
-      while true do
-        _drawGrid(shape)
-        Citizen.Wait(0)
-      end
-    end)
-  end
+  Citizen.CreateThread(function()
+    while not shape.grid do Citizen.Wait(0) end
+    if options.debugPoly or options.debugGrid then
+      Citizen.CreateThread(function()
+        while true do
+          _drawPoly(shape, {drawPoints=true})
+          Citizen.Wait(0)
+        end
+      end)
+    end
+    if options.debugGrid and shape.useGrid then
+      local coverage = string.format("%.2f", shape.gridCoverage * 100)
+      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. shape.gridDivisions
+      .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
+      Citizen.CreateThread(function()
+        while true do
+          _drawGrid(shape)
+          Citizen.Wait(0)
+        end
+      end)
+    end
+  
+  end)
 end
 
 
