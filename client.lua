@@ -39,14 +39,8 @@ local function _drawGrid(poly)
   if not minZ or not maxZ then
     local plyPed = PlayerPedId()
     local plyPos = GetEntityCoords(plyPed)
-    local zBool, zGround = GetGroundZFor_3dCoord(plyPos.x, plyPos.y, plyPos.z, 1)
-    if zBool then
-      minZ = zGround
-      maxZ = zGround + 50.0
-    else
-      minZ = plyPos.z - 75.0
-      maxZ = plyPos.z + 75.0
-    end
+    minZ = plyPos.z - 76.0
+    maxZ = plyPos.z - 75.0
   end
 
   local gridCellsInsidePoly = poly.gridCellsInsidePoly
