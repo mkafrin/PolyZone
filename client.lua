@@ -8,11 +8,14 @@ local function _drawPoly(shape, opt)
   local minZ = shape.minZ or plyPos.z - zDrawDist
   local maxZ = shape.maxZ or plyPos.z + zDrawDist
   for i=1, #shape.points do
-    DrawLine(shape.points[i].x, shape.points[i].y, minZ, shape.points[i].x, shape.points[i].y, maxZ, 255, 0, 0, 255)
+    if opt.drawPoints then
+      DrawLine(shape.points[i].x, shape.points[i].y, minZ, shape.points[i].x, shape.points[i].y, maxZ, 255, 0, 0, 255)
+    end
     if i < #shape.points then
       for j = minZ, maxZ, opt.lineSepDist or 5.0 do
         DrawLine(shape.points[i].x, shape.points[i].y, j, shape.points[i+1].x, shape.points[i+1].y, j, 0, 255, 0, 255)
       end
+      DrawLine(shape.points[i].x, shape.points[i].y, maxZ, shape.points[i+1].x, shape.points[i+1].y, maxZ, 0, 255, 0, 255)
     end
   end
 
@@ -20,11 +23,12 @@ local function _drawPoly(shape, opt)
     for j = minZ, maxZ, opt.lineSepDist or 5.0 do
       DrawLine(shape.points[#shape.points].x, shape.points[#shape.points].y, j, shape.points[1].x, shape.points[1].y, j, 0, 255, 0, 255)
     end
+    DrawLine(shape.points[#shape.points].x, shape.points[#shape.points].y, maxZ, shape.points[1].x, shape.points[1].y, maxZ, 0, 255, 0, 255)
   end
 end
 
 
-function PolyZone.draw(shape, opt)
+function PolyZone.drawPoly(shape, opt)
   _drawPoly(shape, opt)
 end
 
@@ -260,16 +264,15 @@ local function _calculateShape(shape, options)
   if shape.useGrid then
     shape.grid = _createGrid(shape)
     shape.gridCoverage = shape.gridArea / shape.area;
-    print(shape.gridCoverage)
   end
 end
 
 
 function _initDebug(shape, options)
-  if options.debugPoly then
+  if options.debugPoly or options.debugGrid then
     Citizen.CreateThread(function()
       while true do
-        _drawPoly(shape)
+        _drawPoly(shape, {drawPoints=true})
         Citizen.Wait(0)
       end
     end)
@@ -291,6 +294,7 @@ function PolyZone:Create(points, options)
   end
 
   options = options or {}
+  local useGrid = options.useGrid or true
   local shape = {
     name = tostring(options.name) or nil,
     points = points,
@@ -300,9 +304,9 @@ function PolyZone:Create(points, options)
     min = vector2(0, 0),
     minZ = tonumber(options.minZ) or nil,
     maxZ = tonumber(options.maxZ) or nil,
-    useGrid = options.useGrid or true,
+    useGrid = useGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
-    gridCellsInsidePoly = (options.debugGrid and shape.useGrid) and {} or nil,
+    gridCellsInsidePoly = (options.debugGrid and useGrid) and {} or nil,
     gridArea = 0.0
   }
   _calculateShape(shape, options)
@@ -312,6 +316,6 @@ function PolyZone:Create(points, options)
   return shape
 end
 
-function PolyZone:isInside(point)
+function PolyZone:isPointInside(point)
   return _pointInPoly(point, self)
 end

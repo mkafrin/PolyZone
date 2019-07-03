@@ -1,6 +1,6 @@
 RegisterNetEvent("polyzone:printShape")
 AddEventHandler("polyzone:printShape", function(shape)
-  file = io.open("shapes.txt", "a")
+  file = io.open('polyzone_created_shapes.txt', "a")
 
   io.output(file)
 

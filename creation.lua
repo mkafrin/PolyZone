@@ -37,6 +37,13 @@ end)
 
 RegisterCommand("pz_endshape", function(src, args)
   TriggerServerEvent("polyzone:printShape", createdShape)
+
+  TriggerEvent('chat:addMessage', {
+    color = { 0, 255, 0},
+    multiline = true,
+    args = {"Me", "Check your server root folder for polyzone_created_shapes.txt to get the shape!"}
+  })
+
   drawShape = false
   createdShape = nil
 end)
@@ -55,7 +62,7 @@ end)
 function drawThread()
   Citizen.CreateThread(function()
     while drawShape do
-      PolyZone.drawPoly(createdShape)
+      PolyZone.drawPoly(createdShape, {drawPoints=true})
       Citizen.Wait(1)
     end
   end)
