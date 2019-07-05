@@ -365,7 +365,6 @@ function _initDebug(shape, options)
         end
       end)
     end
-  
   end)
 end
 
