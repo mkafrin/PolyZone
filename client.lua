@@ -49,7 +49,7 @@ local function _drawGrid(poly)
     local line = lines[i]
     local min = line.min
     local max = line.max
-    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, 0, 255, 0, 255)
+    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, 255, 255, 255, 255)
   end
 end
 
@@ -344,8 +344,12 @@ function _initDebug(shape, options)
     while not shape.grid do Citizen.Wait(0) end
     if options.debugPoly or options.debugGrid then
       Citizen.CreateThread(function()
+        local lineSepDist
+        if shape.minZ and shape.maxZ then
+          lineSepDist = math.max(1.0, math.min((shape.maxZ - shape.minZ) / 10.0, 10.0))
+        end
         while true do
-          _drawPoly(shape, {drawPoints=true})
+          _drawPoly(shape, {drawPoints=true, lineSepDist=lineSepDist})
           Citizen.Wait(0)
         end
       end)
