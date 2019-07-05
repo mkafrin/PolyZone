@@ -97,31 +97,35 @@ end
 
 
 local function _pointInPoly(point, poly)
-  local minZ = poly.minZ
-  local maxZ = poly.maxZ
-  if minZ and maxZ and (point.z < minZ or point.z > maxZ) then
-    return false
-  end
-
   local x = point.x
   local y = point.y
   local min = poly.min
+  local minX = min.x
+  local minY = min.y
   local max = poly.max
 
-  -- Checks if point is within the bounding circle of the polygon before proceeding
-  if x < min.x or
+  -- Checks if point is within the polygon's bounding box
+  if x < minX or
      x > max.x or
-     y < min.y or
+     y < minY or
      y > max.y then
       return false
+  end
+
+  -- Checks if point is within the polygon's height bounds
+  local minZ = poly.minZ
+  local maxZ = poly.maxZ
+  local z = point.z
+  if minZ and maxZ and (z < minZ or z > maxZ) then
+    return false
   end
 
   -- Returns true if the grid cell associated with the point is entirely inside the poly
   if poly.grid then
     local gridDivisions = poly.gridDivisions
     local size = poly.size
-    local gridPosX = x - min.x
-    local gridPosY = y - min.y
+    local gridPosX = x - minX
+    local gridPosY = y - minY
     local gridCellX = (gridPosX * gridDivisions) // size.x
     local gridCellY = (gridPosY * gridDivisions) // size.y
     if (poly.grid[gridCellY + 1][gridCellX + 1]) then return true end
@@ -132,9 +136,15 @@ end
 
 -- Detects intersection between two lines
 local function _isIntersecting(a, b, c, d)
-  local denominator = ((b.x - a.x) * (d.y - c.y)) - ((b.y - a.y) * (d.x - c.x))
-  local numerator1 = ((a.y - c.y) * (d.x - c.x)) - ((a.x - c.x) * (d.y - c.y))
-  local numerator2 = ((a.y - c.y) * (b.x - a.x)) - ((a.x - c.x) * (b.y - a.y))
+  local ax_minus_cx = a.x - c.x
+  local bx_minus_ax = b.x - a.x
+  local dx_minus_cx = d.x - c.x
+  local ay_minus_cy = a.y - c.y
+  local by_minus_ay = b.y - a.y
+  local dy_minus_cy = d.y - c.y
+  local denominator = ((bx_minus_ax) * (dy_minus_cy)) - ((by_minus_ay) * (dx_minus_cx))
+  local numerator1 = ((ay_minus_cy) * (dx_minus_cx)) - ((ax_minus_cx) * (dy_minus_cy))
+  local numerator2 = ((ay_minus_cy) * (bx_minus_ax)) - ((ax_minus_cx) * (by_minus_ay))
 
   -- Detect coincident lines
   if denominator == 0 then return numerator1 == 0 and numerator2 == 0 end
@@ -152,13 +162,14 @@ local function _calculateGridCellPoints(cellX, cellY, poly)
   local gridCellHeight = poly.gridCellHeight
   local x = cellX * gridCellWidth
   local y = cellY * gridCellHeight
+  local min = poly.min
   -- poly.min must be added to all the points, in order to shift the grid cell to poly's starting position
   return {
-    vector2(x, y) + poly.min,
-    vector2(x + gridCellWidth, y) + poly.min,
-    vector2(x + gridCellWidth, y + gridCellHeight) + poly.min,
-    vector2(x, y + gridCellHeight) + poly.min,
-    vector2(x, y) + poly.min
+    vector2(x, y) + min,
+    vector2(x + gridCellWidth, y) + min,
+    vector2(x + gridCellWidth, y + gridCellHeight) + min,
+    vector2(x, y + gridCellHeight) + min,
+    vector2(x, y) + min
   }
 end
 
@@ -171,16 +182,18 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
 
   -- If none of the points of the grid cell are in the polygon, the grid cell can't be in it
   local isOnePointInPoly = false
-  for i=1, #gridCellPoints do
+  for i=1, #gridCellPoints - 1 do
     local cellPoint = gridCellPoints[i]
     local x = cellPoint.x
     local y = cellPoint.y
     if _windingNumber(cellPoint, poly.points) then
       isOnePointInPoly = true
-      if not poly.gridXPoints[x] then poly.gridXPoints[x] = {} end
-      if not poly.gridYPoints[y] then poly.gridYPoints[y] = {} end
-      poly.gridXPoints[x][y] = true
-      poly.gridYPoints[y][x] = true
+      if poly.lines then
+        if not poly.gridXPoints[x] then poly.gridXPoints[x] = {} end
+        if not poly.gridYPoints[y] then poly.gridYPoints[y] = {} end
+        poly.gridXPoints[x][y] = true
+        poly.gridYPoints[y][x] = true
+      else break end
     end
   end
   if isOnePointInPoly == false then
@@ -189,9 +202,11 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
 
   -- If any of the grid cell's lines intersects with any of the polygon's lines
   -- then the grid cell is not completely within the poly
-  for i=1, #polyPoints - 1 do
-    for j=1, #gridCellPoints - 1 do
-      if _isIntersecting(polyPoints[i], polyPoints[i+1], gridCellPoints[j], gridCellPoints[j+1]) then
+  for i=1, #gridCellPoints - 1 do
+    local gridCellP1 = gridCellPoints[i]
+    local gridCellP2 = gridCellPoints[i+1]
+    for j=1, #polyPoints - 1 do
+      if _isIntersecting(gridCellP1, gridCellP2, polyPoints[j], polyPoints[j+1]) then
         return false
       end
     end
@@ -262,7 +277,7 @@ local function _createGrid(shape, options)
   -- Calculate all grid cells that are entirely inside the polygon
   local isInside = {}
   for y=1, shape.gridDivisions do
-    Citizen.Wait(25)
+    Citizen.Wait(0)
     isInside[y] = {}
     for x=1, shape.gridDivisions do
       if _isGridCellInsidePoly(x-1, y-1, shape) then
@@ -273,6 +288,8 @@ local function _createGrid(shape, options)
   end
   shape.grid = isInside
   shape.gridCoverage = shape.gridArea / shape.area
+  -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
+  collectgarbage("collect")
 
   if options.debugGrid then
     Citizen.CreateThread(function()
@@ -328,9 +345,11 @@ local function _calculateShape(shape, options)
   shape.center = (shape.max + shape.min) / 2
   shape.area = _calculatePolygonArea(shape.points)
   if shape.useGrid then
-    shape.gridXPoints = {}
-    shape.gridYPoints = {}
-    shape.lines = {}
+    if options.debugGrid then
+      shape.gridXPoints = {}
+      shape.gridYPoints = {}
+      shape.lines = {}
+    end
     shape.gridArea = 0.0
     shape.gridCellWidth = shape.size.x / shape.gridDivisions
     shape.gridCellHeight = shape.size.y / shape.gridDivisions
@@ -375,6 +394,8 @@ function PolyZone:Create(points, options)
   end
 
   options = options or {}
+  local useGrid = options.useGrid
+  if useGrid == nil then useGrid = true end
   local shape = {
     name = tostring(options.name) or nil,
     points = points,
@@ -384,7 +405,7 @@ function PolyZone:Create(points, options)
     min = vector2(0, 0),
     minZ = tonumber(options.minZ) or nil,
     maxZ = tonumber(options.maxZ) or nil,
-    useGrid = options.useGrid or true,
+    useGrid = useGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
   }
   _calculateShape(shape, options)
