@@ -4,6 +4,7 @@ description "Find A Point Inside a Polygon"
 
 client_scripts {
   "client.lua",
+  "commands.lua",
   "creation.lua"
 }
 

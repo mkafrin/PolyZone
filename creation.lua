@@ -1,15 +1,9 @@
 local createdShape
 local drawShape = false
 
-RegisterCommand("pz_startshape", function(src, args)
-  if args[1] == nil then
-    TriggerEvent('chat:addMessage', {
-      color = { 255, 0, 0},
-      multiline = true,
-      args = {"Me", "Please add a name!"}
-    })
-    return
-  elseif createdShape ~= nil then
+RegisterNetEvent("polyzone:polystart")
+AddEventHandler("polyzone:polystart", function(name)
+  if createdShape ~= nil then
     TriggerEvent('chat:addMessage', {
       color = { 255, 0, 0},
       multiline = true,
@@ -22,20 +16,39 @@ RegisterCommand("pz_startshape", function(src, args)
 
   createdShape = {
     points = {vector2(coords.x, coords.y)},
-    options = {name = tostring(args[1])}
+    options = {name = tostring(name)}
   }
 
   drawShape = true
   drawThread()
 end)
 
-RegisterCommand("pz_addpoint", function(src, args)
+RegisterNetEvent("polyzone:polyadd")
+AddEventHandler("polyzone:polyadd", function()
+  if createdShape == nil then
+    return
+  end
+
   local coords = GetEntityCoords(PlayerPedId())
 
   createdShape.points[#createdShape.points + 1] = vector2(coords.x, coords.y)
 end)
 
-RegisterCommand("pz_endshape", function(src, args)
+RegisterNetEvent("polyzone:polyundo")
+AddEventHandler("polyzone:polyundo", function()
+  if createdShape == nil then
+    return
+  end
+
+  createdShape.points[#createdShape.points] = nil
+end)
+
+RegisterNetEvent("polyzone:polyfinish")
+AddEventHandler("polyzone:polyfinish", function()
+  if createdShape == nil then
+    return
+  end
+
   TriggerServerEvent("polyzone:printShape", createdShape)
 
   TriggerEvent('chat:addMessage', {
@@ -48,14 +61,20 @@ RegisterCommand("pz_endshape", function(src, args)
   createdShape = nil
 end)
 
-Citizen.CreateThread(function()
-  TriggerEvent('chat:addSuggestion', '/pz_startshape', 'Starts creation of a shape for PolyZone.', {
-    { name="name", help="Shape Name (required)" },
+RegisterNetEvent("polyzone:polycancel")
+AddEventHandler("polyzone:polycancel", function()
+  if createdShape == nil then
+    return
+  end
+
+  TriggerEvent('chat:addMessage', {
+    color = { 0, 255, 0},
+    multiline = true,
+    args = {"Me", "Shape creation canceled!"}
   })
 
-  TriggerEvent('chat:addSuggestion', '/pz_addpoint', 'Adds point to shape.', {})
-
-  TriggerEvent('chat:addSuggestion', '/pz_endshape', 'Closes and prints shape.', {})
+  drawShape = false
+  createdShape = nil
 end)
 
 -- Drawing
