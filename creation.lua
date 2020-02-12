@@ -76,7 +76,7 @@ AddEventHandler("polyzone:polycancel", function()
   end
 
   TriggerEvent('chat:addMessage', {
-    color = { 0, 255, 0},
+    color = {255, 0, 0},
     multiline = true,
     args = {"Me", "Shape creation canceled!"}
   })
