@@ -12,7 +12,7 @@ AddEventHandler("polyzone:printShape", function(shape)
 end)
 
 function parseShape(shape)
-  local printout = "Name: " .. shape.options.name .. " | " .. os.date("%x %I:%M %p\n")
+  local printout = "--\nName: " .. shape.options.name .. " | " .. os.date("%x %I:%M %p\n\n")
   printout = printout .. "PolyZone:Create({\n"
   for i=1, #shape.points do
     if i ~= #shape.points then
@@ -22,7 +22,7 @@ function parseShape(shape)
     end
   end
 
-  printout = printout .. "}, {name=\"" .. shape.options.name .. "\"})\n\n"
-  
+  printout = printout .. "}, {name=\"" .. shape.options.name .. "\", minZ = " .. shape.options.minZ .. ", maxZ = " .. shape.options.maxZ .. "})\n\n"
+
   return printout
 end

@@ -16,7 +16,7 @@ AddEventHandler("polyzone:polystart", function(name)
 
   createdShape = {
     points = {vector2(coords.x, coords.y)},
-    options = {name = tostring(name)}
+    options = {minZ = coords.z, maxZ = coords.z, name = tostring(name)}
   }
 
   drawShape = true
@@ -30,6 +30,14 @@ AddEventHandler("polyzone:polyadd", function()
   end
 
   local coords = GetEntityCoords(PlayerPedId())
+
+  if (coords.z > createdShape.options.maxZ) then
+    createdShape.options.maxZ = coords.z
+  end
+
+  if (coords.z < createdShape.options.minZ) then
+    createdShape.options.minZ = coords.z
+  end
 
   createdShape.points[#createdShape.points + 1] = vector2(coords.x, coords.y)
 end)
