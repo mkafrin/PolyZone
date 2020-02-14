@@ -160,16 +160,16 @@ end
 local function _calculateGridCellPoints(cellX, cellY, poly)
   local gridCellWidth = poly.gridCellWidth
   local gridCellHeight = poly.gridCellHeight
-  local x = cellX * gridCellWidth
-  local y = cellY * gridCellHeight
   local min = poly.min
-  -- poly.min must be added to all the points, in order to shift the grid cell to poly's starting position
+  -- min added to initial point, in order to shift the grid cells to the poly's starting position
+  local x = cellX * gridCellWidth + min.x
+  local y = cellY * gridCellHeight + min.y
   return {
-    vector2(x, y) + min,
-    vector2(x + gridCellWidth, y) + min,
-    vector2(x + gridCellWidth, y + gridCellHeight) + min,
-    vector2(x, y + gridCellHeight) + min,
-    vector2(x, y) + min
+    vector2(x, y),
+    vector2(x + gridCellWidth, y),
+    vector2(x + gridCellWidth, y + gridCellHeight),
+    vector2(x, y + gridCellHeight),
+    vector2(x, y)
   }
 end
 
