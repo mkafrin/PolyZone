@@ -354,6 +354,8 @@ local function _calculateShape(shape, options)
     shape.gridCellWidth = shape.size.x / shape.gridDivisions
     shape.gridCellHeight = shape.size.y / shape.gridDivisions
     _createGrid(shape, options)
+  else
+    collectgarbage("collect")
   end
 end
 
