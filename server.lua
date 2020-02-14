@@ -22,7 +22,7 @@ function parseShape(shape)
     end
   end
 
-  printout = printout .. "}, {name=\"" .. shape.options.name .. "\", minZ = " .. shape.options.minZ .. ", maxZ = " .. shape.options.maxZ .. "})\n\n"
+  printout = printout .. "}, {\n  name=\"" .. shape.options.name .. "\",\n  --minZ = " .. shape.options.minZ .. ",\n  --maxZ = " .. shape.options.maxZ .. "\n})\n\n"
 
   return printout
 end
