@@ -448,3 +448,19 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
     end
   end)
 end
+
+function PolyZone:getBoundingBoxMin()
+  return self.min
+end
+
+function PolyZone:getBoundingBoxMax()
+  return self.max
+end
+
+function PolyZone:getBoundingBoxSize()
+  return self.size
+end
+
+function PolyZone:getBoundingBoxCenter()
+  return self.center
+end
