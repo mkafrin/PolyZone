@@ -420,6 +420,16 @@ end
 function PolyZone:isPointInside(point)
   return _pointInPoly(point, self)
 end
+
+function PolyZone.getPlayerPosition()
+  return GetEntityCoords(PlayerPedId())
+end
+
+local HeadBone = 0x796e;
+function PolyZone.getPlayerHeadPosition()
+  return GetPedBoneCoords(PlayerPedId(), HeadBone);
+end
+
 function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
   -- Localize the waitInMS value for performance reasons (default of 500 ms)
   local _waitInMS = 500
