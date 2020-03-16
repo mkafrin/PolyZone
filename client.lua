@@ -420,3 +420,21 @@ end
 function PolyZone:isPointInside(point)
   return _pointInPoly(point, self)
 end
+function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
+  -- Localize the waitInMS value for performance reasons (default of 500 ms)
+  local _waitInMS = 500
+  if waitInMS ~= nil then _waitInMS = waitInMS end
+
+  Citizen.CreateThread(function()
+    local isInside = nil
+    while true do
+      local point = getPointCb()
+      local newIsInside = _pointInPoly(point, self)
+      if newIsInside ~= isInside then
+        onPointInOutCb(newIsInside, point)
+        isInside = newIsInside
+      end
+      Citizen.Wait(_waitInMS)
+    end
+  end)
+end
