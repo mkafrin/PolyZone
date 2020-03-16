@@ -1,6 +1,7 @@
 # PolyZone
 PolyZone is a FiveM mod to define polygonal zones and test whether a point is inside or outside of the zone
 
+### Using PolyZone in a script
 In order to use PolyZone in your script, you must include PolyZone's client.lua directly in your __resource.lua. You can do that by using FiveM's @ syntax for including resources:
 
 ```lua
@@ -10,6 +11,7 @@ client_scripts {
 }
 ```
 
+### Creating a PolyZone instance
 A PolyZone is created by invoking the Create method, and passing in a table of vector2s and a table of options:
 
 ```lua
@@ -30,7 +32,7 @@ local pinkcage = PolyZone:Create({
 ```
 Note: The points MUST be in sequential order. You could write down the points yourself, but PolyZone comes with a creation script that will auto-generate the code for you. Just use the commands `/polystart`, `/polyadd`, and `/polyfinish` to create a new PolyZone, and see the points you are adding in game! If you mess up a point, you can use `/polyundo`, and if you want to cancel the whole thing, just use `/polycancel`.
 
-The available options for a zone are:
+### Options for a PolyZone instance
 
 | Property | Type | Default | Required | Description |
 |--|--|--|--|--|
@@ -41,6 +43,7 @@ The available options for a zone are:
 |debugPoly|Boolean|false|false|Debug drawing of the polygon|
 |gridDivisions|Integer|30|false|Number of times the optimization grid is divided. The higher this number, the higher the grid coverage. 80-90% grid coverage is optimal, and setting debugGrid=true will print the zone's coverage. The default of 30 will achieve 80-90% coverage with most zones.|
 
+### Testing a point with PolyZone
 There is two ways to test whether a point is inside the zone. There is a more manual way, which includes directly using the isPointInside method on a particular zone, and then there is a helper function which remove some of that boilerplate.
 
 Assuming we are using the "pinkcage" zone from above, the manual way to check if a point is inside the zone is as follows:
@@ -110,6 +113,7 @@ end
 ```
 This function will return the position of the vehicle the player is currently in. Note that this is just an example, and in reality, `PolyZone.getPlayerPosition` will do this anyways.
 
+### Additional Helper Functions
 Lastly, there are a few additional helper functions that expose some internal variables, in case you might have a use for them. These functions are all based on the bounding box that surrounds the zone and are:
 
 `getBoundingBoxMin()` - Minimum x and y of the bounding box \
