@@ -39,7 +39,7 @@ Note: The points MUST be in sequential order. You could write down the points yo
 |name|String|nil|false|Name of the zone|
 |minZ|Float|nil|false|Minimum height of the zone|
 |maxZ|Float|nil|false|Maximum height of the zone|
-|debugGrid|Boolean|false|false|Debug drawing of the optimization grid|
+|debugGrid|Boolean|false|false|Debug drawing of the optimization grid. Setting this to true also sets debugPoly to true|
 |debugPoly|Boolean|false|false|Debug drawing of the polygon|
 |gridDivisions|Integer|30|false|Number of times the optimization grid is divided. The higher this number, the higher the grid coverage. 80-90% grid coverage is optimal, and setting debugGrid=true will print the zone's coverage. The default of 30 will achieve 80-90% coverage with most zones.|
 
