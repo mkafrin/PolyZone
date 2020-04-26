@@ -116,7 +116,7 @@ local function _pointInPoly(point, poly)
   local minZ = poly.minZ
   local maxZ = poly.maxZ
   local z = point.z
-  if minZ and maxZ and (z < minZ or z > maxZ) then
+  if (minZ and z < minZ) or (maxZ and z > maxZ) then
     return false
   end
 
