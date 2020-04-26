@@ -44,7 +44,7 @@ Note: The points MUST be in sequential order. You could write down the points yo
 |gridDivisions|Integer|30|false|Number of times the optimization grid is divided. The higher this number, the higher the grid coverage. 80-90% grid coverage is optimal, and setting debugGrid=true will print the zone's coverage. The default of 30 will achieve 80-90% coverage with most zones.|
 |debugColors|Table|see below|false|Used to customize the colors of the debug drawing in rgb format. Each color is a table with three integers between 0 and 255 representing red, green, and blue. See below for all the colors you can change|
 |debugColors.horizontalLines|Table|{0, 255, 0}|false|Color of horizontal lines that connect the zone's points together|
-|debugColors.verticalLines|Table|{255, 0, 0}|false|Color of vertical lines for each point in the zone|
+|debugColors.verticalLines|Table|{255, 0, 0}|false|Color of vertical line for each point in the zone|
 |debugColors.gridLines|Table|{255, 255, 255}|false|Color of the lines representing the optimization grid|
 
 ### Testing a point with PolyZone
