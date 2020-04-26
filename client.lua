@@ -222,11 +222,10 @@ end
 local function _calculateLinesForDrawingGrid(shape)
   local lines = {}
   for x, tbl in pairs(shape.gridXPoints) do
-    local count = 1
     local yValues = {}
     -- Turn dict/set of values into array
-    for y, _ in pairs(tbl) do yValues[count] = y; count = count + 1 end
-    if count >= 2 then
+    for y, _ in pairs(tbl) do yValues[#yValues + 1] = y end
+    if #yValues >= 2 then
       table.sort(yValues)
       local minY = yValues[1]
       local lastY = yValues[1]
@@ -249,12 +248,11 @@ local function _calculateLinesForDrawingGrid(shape)
   -- Setting nil to allow the GC to clear it out of memory, since we no longer need this
   shape.gridXPoints = nil
 
-  -- Exactly the same as above, but for gridYPoints instead of gridXPoints
+  -- Same as above, but for gridYPoints instead of gridXPoints
   for y, tbl in pairs(shape.gridYPoints) do
-    local count = 1
     local xValues = {}
-    for x, _ in pairs(tbl) do xValues[count] = x; count = count + 1 end
-    if count >= 2 then
+    for x, _ in pairs(tbl) do xValues[#xValues + 1] = x end
+    if #xValues >= 2 then
       table.sort(xValues)
       local minX = xValues[1]
       local lastX = xValues[1]
