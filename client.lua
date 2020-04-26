@@ -1,34 +1,39 @@
 PolyZone = {}
 
-local function _drawHorizontalLinesBetweenPoints(p1, p2, minZ, maxZ, lineSepDist)
+local function _drawHorizontalLinesBetweenPoints(p1, p2, minZ, maxZ, lineSepDist, r, g, b)
   local p1X, p1Y, p2X, p2Y = p1.x, p1.y, p2.x, p2.y
   for i = minZ, maxZ, lineSepDist do
-    DrawLine(p1X, p1Y, i, p2X, p2Y, i, 0, 255, 0, 255)
+    DrawLine(p1X, p1Y, i, p2X, p2Y, i, r, g, b, 255)
   end
-  DrawLine(p1X, p1Y, maxZ, p2X, p2Y, maxZ, 0, 255, 0, 255)
+  DrawLine(p1X, p1Y, maxZ, p2X, p2Y, maxZ, r, g, b, 255)
 end
 
 local function _drawPoly(shape, opt)
   opt = opt or {}
   local zDrawDist = 75.0
+  local vColor = shape.debugColors.verticalLines
+  local vR, vG, vB = vColor[1], vColor[2], vColor[3]
+  local hColor = shape.debugColors.horizontalLines
+  local hR, hG, hB = hColor[1], hColor[2], hColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
   local minZ = shape.minZ or plyPos.z - zDrawDist
   local maxZ = shape.maxZ or plyPos.z + zDrawDist
   local lineSepDist = opt.lineSepDist or 5.0
+  
   local points = shape.points
   for i=1, #points do
     local point = points[i]
     if opt.drawPoints then
-      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, 255, 0, 0, 255)
+      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, vR, vG, vB, 255)
     end
     if i < #points then
-      _drawHorizontalLinesBetweenPoints(point, points[i+1], minZ, maxZ, lineSepDist)
+      _drawHorizontalLinesBetweenPoints(point, points[i+1], minZ, maxZ, lineSepDist, hR, hG, hB)
     end
   end
 
   if #points > 2 then
-    _drawHorizontalLinesBetweenPoints(points[1], points[#points], minZ, maxZ, lineSepDist)
+    _drawHorizontalLinesBetweenPoints(points[1], points[#points], minZ, maxZ, lineSepDist, hR, hG, hB)
   end
 end
 
@@ -49,11 +54,13 @@ local function _drawGrid(poly)
   end
 
   local lines = poly.lines
+  local color = poly.debugColors.gridLines
+  local r, g, b = color[1], color[2], color[3]
   for i=1, #lines do
     local line = lines[i]
     local min = line.min
     local max = line.max
-    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, 255, 255, 255, 255)
+    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, r, g, b, 255)
   end
 end
 
@@ -398,6 +405,7 @@ function PolyZone:Create(points, options)
   end
 
   options = options or {}
+  local colors = options.debugColors or {}
   local useGrid = options.useGrid
   if useGrid == nil then useGrid = true end
   local shape = {
@@ -411,6 +419,11 @@ function PolyZone:Create(points, options)
     maxZ = tonumber(options.maxZ) or nil,
     useGrid = useGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
+    debugColors = {
+      horizontalLines = colors.horizontalLines or {0, 255, 0},
+      verticalLines = colors.verticalLines or {255, 0, 0},
+      gridLines = colors.gridLines or {255, 255, 255}
+    }
   }
   _calculateShape(shape, options)
   _initDebug(shape, options)
