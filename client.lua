@@ -8,20 +8,20 @@ local function _drawHorizontalLinesBetweenPoints(p1, p2, minZ, maxZ, lineSepDist
   DrawLine(p1X, p1Y, maxZ, p2X, p2Y, maxZ, r, g, b, 255)
 end
 
-local function _drawPoly(shape, opt)
+local function _drawPoly(poly, opt)
   opt = opt or {}
   local zDrawDist = 75.0
-  local vColor = shape.debugColors.verticalLines
+  local vColor = poly.debugColors.verticalLines
   local vR, vG, vB = vColor[1], vColor[2], vColor[3]
-  local hColor = shape.debugColors.horizontalLines
+  local hColor = poly.debugColors.horizontalLines
   local hR, hG, hB = hColor[1], hColor[2], hColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
-  local minZ = shape.minZ or plyPos.z - zDrawDist
-  local maxZ = shape.maxZ or plyPos.z + zDrawDist
+  local minZ = poly.minZ or plyPos.z - zDrawDist
+  local maxZ = poly.maxZ or plyPos.z + zDrawDist
   local lineSepDist = opt.lineSepDist or 5.0
   
-  local points = shape.points
+  local points = poly.points
   for i=1, #points do
     local point = points[i]
     if opt.drawPoints then
@@ -38,8 +38,8 @@ local function _drawPoly(shape, opt)
 end
 
 
-function PolyZone.drawPoly(shape, opt)
-  _drawPoly(shape, opt)
+function PolyZone.drawPoly(poly, opt)
+  _drawPoly(poly, opt)
 end
 
 -- Debug drawing all grid cells that are completly within the polygon
@@ -226,9 +226,9 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
 end
 
 
-local function _calculateLinesForDrawingGrid(shape)
+local function _calculateLinesForDrawingGrid(poly)
   local lines = {}
-  for x, tbl in pairs(shape.gridXPoints) do
+  for x, tbl in pairs(poly.gridXPoints) do
     local yValues = {}
     -- Turn dict/set of values into array
     for y, _ in pairs(tbl) do yValues[#yValues + 1] = y end
@@ -241,7 +241,7 @@ local function _calculateLinesForDrawingGrid(shape)
         -- Checks for breaks in the grid. If the distance between the last value and the current one
         -- is greater than the size of a grid cell, that means the line between them must go outside the polygon.
         -- Therefore, a line must be created between minY and the lastY, and a new line started at the current y
-        if y - lastY > shape.gridCellHeight + 0.01 then
+        if y - lastY > poly.gridCellHeight + 0.01 then
           lines[#lines+1] = {min=vector2(x, minY), max=vector2(x, lastY)}
           minY = y
         elseif i == #yValues then
@@ -253,10 +253,10 @@ local function _calculateLinesForDrawingGrid(shape)
     end
   end
   -- Setting nil to allow the GC to clear it out of memory, since we no longer need this
-  shape.gridXPoints = nil
+  poly.gridXPoints = nil
 
   -- Same as above, but for gridYPoints instead of gridXPoints
-  for y, tbl in pairs(shape.gridYPoints) do
+  for y, tbl in pairs(poly.gridYPoints) do
     local xValues = {}
     for x, _ in pairs(tbl) do xValues[#xValues + 1] = x end
     if #xValues >= 2 then
@@ -265,7 +265,7 @@ local function _calculateLinesForDrawingGrid(shape)
       local lastX = xValues[1]
       for i=1, #xValues do
         local x = xValues[i]
-        if x - lastX > shape.gridCellWidth + 0.01 then
+        if x - lastX > poly.gridCellWidth + 0.01 then
           lines[#lines+1] = {min=vector2(minX, y), max=vector2(lastX, y)}
           minX = x
         elseif i == #xValues then
@@ -275,34 +275,34 @@ local function _calculateLinesForDrawingGrid(shape)
       end
     end
   end
-  shape.gridYPoints = nil
+  poly.gridYPoints = nil
   return lines
 end
 
 
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
-local function _createGrid(shape, options)
+local function _createGrid(poly, options)
   Citizen.CreateThread(function()
   -- Calculate all grid cells that are entirely inside the polygon
   local isInside = {}
-  for y=1, shape.gridDivisions do
+  for y=1, poly.gridDivisions do
     Citizen.Wait(0)
     isInside[y] = {}
-    for x=1, shape.gridDivisions do
-      if _isGridCellInsidePoly(x-1, y-1, shape) then
-        shape.gridArea = shape.gridArea + shape.gridCellWidth * shape.gridCellHeight
+    for x=1, poly.gridDivisions do
+      if _isGridCellInsidePoly(x-1, y-1, poly) then
+        poly.gridArea = poly.gridArea + poly.gridCellWidth * poly.gridCellHeight
         isInside[y][x] = true
       end
     end
   end
-  shape.grid = isInside
-  shape.gridCoverage = shape.gridArea / shape.area
+  poly.grid = isInside
+  poly.gridCoverage = poly.gridArea / poly.area
   -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
   collectgarbage("collect")
 
   if options.debugGrid then
     Citizen.CreateThread(function()
-      shape.lines = _calculateLinesForDrawingGrid(shape)
+      poly.lines = _calculateLinesForDrawingGrid(poly)
       -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
       collectgarbage("collect")
     end)
@@ -323,14 +323,14 @@ function _calculatePolygonArea(points)
 end
 
 
-local function _calculateShape(shape, options)
+local function _calculatePoly(poly, options)
   local totalX = 0.0
   local totalY = 0.0
   local maxX
   local maxY
   local minX
   local minY
-  for i, p in ipairs(shape.points) do
+  for i, p in ipairs(poly.points) do
     if not maxX or p.x > maxX then
       maxX = p.x
     end
@@ -348,49 +348,49 @@ local function _calculateShape(shape, options)
     totalY = totalY + p.y
   end
 
-  shape.max = vector2(maxX, maxY)
-  shape.min = vector2(minX, minY)
-  shape.size = shape.max - shape.min
-  shape.center = (shape.max + shape.min) / 2
-  shape.area = _calculatePolygonArea(shape.points)
-  if shape.useGrid then
+  poly.max = vector2(maxX, maxY)
+  poly.min = vector2(minX, minY)
+  poly.size = poly.max - poly.min
+  poly.center = (poly.max + poly.min) / 2
+  poly.area = _calculatePolygonArea(poly.points)
+  if poly.useGrid then
     if options.debugGrid then
-      shape.gridXPoints = {}
-      shape.gridYPoints = {}
-      shape.lines = {}
+      poly.gridXPoints = {}
+      poly.gridYPoints = {}
+      poly.lines = {}
     end
-    shape.gridArea = 0.0
-    shape.gridCellWidth = shape.size.x / shape.gridDivisions
-    shape.gridCellHeight = shape.size.y / shape.gridDivisions
-    _createGrid(shape, options)
+    poly.gridArea = 0.0
+    poly.gridCellWidth = poly.size.x / poly.gridDivisions
+    poly.gridCellHeight = poly.size.y / poly.gridDivisions
+    _createGrid(poly, options)
   else
     collectgarbage("collect")
   end
 end
 
 
-function _initDebug(shape, options)
+function _initDebug(poly, options)
   Citizen.CreateThread(function()
-    while not shape.grid do Citizen.Wait(0) end
+    while not poly.grid do Citizen.Wait(0) end
     if options.debugPoly or options.debugGrid then
       Citizen.CreateThread(function()
         local lineSepDist
-        if shape.minZ and shape.maxZ then
-          lineSepDist = math.max(1.0, math.min((shape.maxZ - shape.minZ) / 10.0, 10.0))
+        if poly.minZ and poly.maxZ then
+          lineSepDist = math.max(1.0, math.min((poly.maxZ - poly.minZ) / 10.0, 10.0))
         end
         while true do
-          _drawPoly(shape, {drawPoints=true, lineSepDist=lineSepDist})
+          _drawPoly(poly, {drawPoints=true, lineSepDist=lineSepDist})
           Citizen.Wait(0)
         end
       end)
     end
-    if options.debugGrid and shape.useGrid then
-      local coverage = string.format("%.2f", shape.gridCoverage * 100)
-      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. shape.gridDivisions
+    if options.debugGrid and poly.useGrid then
+      local coverage = string.format("%.2f", poly.gridCoverage * 100)
+      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
       .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
       Citizen.CreateThread(function()
         while true do
-          _drawGrid(shape)
+          _drawGrid(poly)
           Citizen.Wait(0)
         end
       end)
@@ -408,7 +408,7 @@ function PolyZone:Create(points, options)
   local colors = options.debugColors or {}
   local useGrid = options.useGrid
   if useGrid == nil then useGrid = true end
-  local shape = {
+  local poly = {
     name = tostring(options.name) or nil,
     points = points,
     center = vector2(0, 0),
@@ -425,11 +425,11 @@ function PolyZone:Create(points, options)
       gridLines = colors.gridLines or {255, 255, 255}
     }
   }
-  _calculateShape(shape, options)
-  _initDebug(shape, options)
-  setmetatable(shape, self)
+  _calculatePoly(poly, options)
+  _initDebug(poly, options)
+  setmetatable(poly, self)
   self.__index = self
-  return shape
+  return poly
 end
 
 function PolyZone:isPointInside(point)
