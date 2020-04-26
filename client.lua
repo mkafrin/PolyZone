@@ -1,5 +1,12 @@
 PolyZone = {}
 
+local function _drawHorizontalLinesBetweenPoints(p1, p2, minZ, maxZ, lineSepDist)
+  local p1X, p1Y, p2X, p2Y = p1.x, p1.y, p2.x, p2.y
+  for i = minZ, maxZ, lineSepDist do
+    DrawLine(p1X, p1Y, i, p2X, p2Y, i, 0, 255, 0, 255)
+  end
+  DrawLine(p1X, p1Y, maxZ, p2X, p2Y, maxZ, 0, 255, 0, 255)
+end
 
 local function _drawPoly(shape, opt)
   opt = opt or {}
@@ -8,23 +15,20 @@ local function _drawPoly(shape, opt)
   local plyPos = GetEntityCoords(plyPed)
   local minZ = shape.minZ or plyPos.z - zDrawDist
   local maxZ = shape.maxZ or plyPos.z + zDrawDist
-  for i=1, #shape.points do
+  local lineSepDist = opt.lineSepDist or 5.0
+  local points = shape.points
+  for i=1, #points do
+    local point = points[i]
     if opt.drawPoints then
-      DrawLine(shape.points[i].x, shape.points[i].y, minZ, shape.points[i].x, shape.points[i].y, maxZ, 255, 0, 0, 255)
+      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, 255, 0, 0, 255)
     end
-    if i < #shape.points then
-      for j = minZ, maxZ, opt.lineSepDist or 5.0 do
-        DrawLine(shape.points[i].x, shape.points[i].y, j, shape.points[i+1].x, shape.points[i+1].y, j, 0, 255, 0, 255)
-      end
-      DrawLine(shape.points[i].x, shape.points[i].y, maxZ, shape.points[i+1].x, shape.points[i+1].y, maxZ, 0, 255, 0, 255)
+    if i < #points then
+      _drawHorizontalLinesBetweenPoints(point, points[i+1], minZ, maxZ, lineSepDist)
     end
   end
 
-  if #shape.points > 2 then
-    for j = minZ, maxZ, opt.lineSepDist or 5.0 do
-      DrawLine(shape.points[#shape.points].x, shape.points[#shape.points].y, j, shape.points[1].x, shape.points[1].y, j, 0, 255, 0, 255)
-    end
-    DrawLine(shape.points[#shape.points].x, shape.points[#shape.points].y, maxZ, shape.points[1].x, shape.points[1].y, maxZ, 0, 255, 0, 255)
+  if #points > 2 then
+    _drawHorizontalLinesBetweenPoints(points[1], points[#points], minZ, maxZ, lineSepDist)
   end
 end
 
