@@ -1,11 +1,15 @@
 PolyZone = {}
 
-local function _drawHorizontalLinesBetweenPoints(p1, p2, minZ, maxZ, lineSepDist, r, g, b)
-  local p1X, p1Y, p2X, p2Y = p1.x, p1.y, p2.x, p2.y
-  for i = minZ, maxZ, lineSepDist do
-    DrawLine(p1X, p1Y, i, p2X, p2Y, i, r, g, b, 255)
-  end
-  DrawLine(p1X, p1Y, maxZ, p2X, p2Y, maxZ, r, g, b, 255)
+local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
+  local bottomLeft = vector3(p1.x, p1.y, minZ)
+  local topLeft = vector3(p1.x, p1.y, maxZ)
+  local bottomRight = vector3(p2.x, p2.y, minZ)
+  local topRight = vector3(p2.x, p2.y, maxZ)
+  
+  DrawPoly(bottomLeft,topLeft,bottomRight,r,g,b,a)
+  DrawPoly(topLeft,topRight,bottomRight,r,g,b,a)
+  DrawPoly(bottomRight,topRight,topLeft,r,g,b,a)
+  DrawPoly(bottomRight,topLeft,bottomLeft,r,g,b,a)
 end
 
 local function _drawPoly(poly, opt)
@@ -13,8 +17,8 @@ local function _drawPoly(poly, opt)
   local zDrawDist = 75.0
   local vColor = poly.debugColors.verticalLines
   local vR, vG, vB = vColor[1], vColor[2], vColor[3]
-  local hColor = poly.debugColors.horizontalLines
-  local hR, hG, hB = hColor[1], hColor[2], hColor[3]
+  local wColor = poly.debugColors.walls
+  local wR, wG, wB = wColor[1], wColor[2], wColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
   local minZ = poly.minZ or plyPos.z - zDrawDist
@@ -25,15 +29,20 @@ local function _drawPoly(poly, opt)
   for i=1, #points do
     local point = points[i]
     if opt.drawPoints then
-      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, vR, vG, vB, 255)
+      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, vR, vG, vB, 64)
     end
     if i < #points then
-      _drawHorizontalLinesBetweenPoints(point, points[i+1], minZ, maxZ, lineSepDist, hR, hG, hB)
+      local p2 = points[i+1]
+      DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, vR, vG, vB, 96)
+      _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
     end
   end
 
   if #points > 2 then
-    _drawHorizontalLinesBetweenPoints(points[1], points[#points], minZ, maxZ, lineSepDist, hR, hG, hB)
+    local firstPoint = points[1]
+    local lastPoint = points[#points]
+    DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, vR, vG, vB, 96)
+    _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
   end
 end
 
@@ -60,7 +69,7 @@ local function _drawGrid(poly)
     local line = lines[i]
     local min = line.min
     local max = line.max
-    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, r, g, b, 255)
+    DrawLine(min.x + 0.0, min.y + 0.0, maxZ + 0.0, max.x + 0.0, max.y + 0.0, maxZ + 0.0, r, g, b, 196)
   end
 end
 
@@ -420,7 +429,7 @@ function PolyZone:Create(points, options)
     useGrid = useGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
     debugColors = {
-      horizontalLines = colors.horizontalLines or {0, 255, 0},
+      walls = colors.walls or {0, 255, 0},
       verticalLines = colors.verticalLines or {255, 0, 0},
       gridLines = colors.gridLines or {255, 255, 255}
     }
