@@ -15,25 +15,24 @@ end
 local function _drawPoly(poly, opt)
   opt = opt or {}
   local zDrawDist = 75.0
-  local vColor = poly.debugColors.verticalLines
-  local vR, vG, vB = vColor[1], vColor[2], vColor[3]
+  local oColor = poly.debugColors.outline
+  local oR, oG, oB = oColor[1], oColor[2], oColor[3]
   local wColor = poly.debugColors.walls
   local wR, wG, wB = wColor[1], wColor[2], wColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
   local minZ = poly.minZ or plyPos.z - zDrawDist
   local maxZ = poly.maxZ or plyPos.z + zDrawDist
-  local lineSepDist = opt.lineSepDist or 5.0
   
   local points = poly.points
   for i=1, #points do
     local point = points[i]
     if opt.drawPoints then
-      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, vR, vG, vB, 64)
+      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
     end
     if i < #points then
       local p2 = points[i+1]
-      DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, vR, vG, vB, 96)
+      DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
       _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
     end
   end
@@ -41,7 +40,7 @@ local function _drawPoly(poly, opt)
   if #points > 2 then
     local firstPoint = points[1]
     local lastPoint = points[#points]
-    DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, vR, vG, vB, 96)
+    DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
     _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
   end
 end
@@ -63,7 +62,7 @@ local function _drawGrid(poly)
   end
 
   local lines = poly.lines
-  local color = poly.debugColors.gridLines
+  local color = poly.debugColors.grid
   local r, g, b = color[1], color[2], color[3]
   for i=1, #lines do
     local line = lines[i]
@@ -430,8 +429,8 @@ function PolyZone:Create(points, options)
     gridDivisions = tonumber(options.gridDivisions) or 30,
     debugColors = {
       walls = colors.walls or {0, 255, 0},
-      verticalLines = colors.verticalLines or {255, 0, 0},
-      gridLines = colors.gridLines or {255, 255, 255}
+      outline = colors.outline or {255, 0, 0},
+      grid = colors.grid or {255, 255, 255}
     }
   }
   _calculatePoly(poly, options)
