@@ -379,7 +379,6 @@ end
 
 function _initDebug(poly, options)
   Citizen.CreateThread(function()
-    while not poly.grid do Citizen.Wait(0) end
     if options.debugPoly or options.debugGrid then
       Citizen.CreateThread(function()
         local lineSepDist
@@ -393,6 +392,7 @@ function _initDebug(poly, options)
       end)
     end
     if options.debugGrid and poly.useGrid then
+      while not poly.grid do Citizen.Wait(0) end
       local coverage = string.format("%.2f", poly.gridCoverage * 100)
       print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
       .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
