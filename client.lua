@@ -27,9 +27,8 @@ local function _drawPoly(poly, opt)
   local points = poly.points
   for i=1, #points do
     local point = points[i]
-    if opt.drawPoints then
-      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
-    end
+    DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
+    
     if i < #points then
       local p2 = points[i+1]
       DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
@@ -381,12 +380,8 @@ function _initDebug(poly, options)
   Citizen.CreateThread(function()
     if options.debugPoly or options.debugGrid then
       Citizen.CreateThread(function()
-        local lineSepDist
-        if poly.minZ and poly.maxZ then
-          lineSepDist = math.max(1.0, math.min((poly.maxZ - poly.minZ) / 10.0, 10.0))
-        end
         while true do
-          _drawPoly(poly, {drawPoints=true, lineSepDist=lineSepDist})
+          _drawPoly(poly)
           Citizen.Wait(0)
         end
       end)
