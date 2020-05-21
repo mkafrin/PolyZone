@@ -34,7 +34,7 @@ end
 
 local function _drawPoly(poly, opt)
   opt = opt or {}
-  local zDrawDist = 75.0
+  local zDrawDist = 45.0
   local oColor = poly.debugColors.outline
   local oR, oG, oB = oColor[1], oColor[2], oColor[3]
   local wColor = poly.debugColors.walls
@@ -76,8 +76,8 @@ local function _drawGrid(poly)
   if not minZ or not maxZ then
     local plyPed = PlayerPedId()
     local plyPos = GetEntityCoords(plyPed)
-    minZ = plyPos.z - 76.0
-    maxZ = plyPos.z - 75.0
+    minZ = plyPos.z - 46.0
+    maxZ = plyPos.z - 45.0
   end
 
   local lines = poly.lines
