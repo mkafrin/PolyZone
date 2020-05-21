@@ -1,5 +1,6 @@
 PolyZone = {}
 
+-- Utility functions
 local rad, cos, sin = math.rad, math.cos, math.sin
 local function rotate(origin, point, theta)
   if theta == 0.0 then return point end
@@ -18,8 +19,78 @@ local function GetRotation(entity)
   return math.deg(math.atan2(fwdVector.y, fwdVector.x))
 end
 
+local function _isLeft(p0, p1, p2)
+  local p0x = p0.x
+  local p0y = p0.y
+  return ((p1.x - p0x) * (p2.y - p0y)) - ((p2.x - p0x) * (p1.y - p0y))
+end
+
+local function _wn_inner_loop(p0, p1, p2, wn)
+  local p2y = p2.y
+  if (p0.y <= p2y) then
+    if (p1.y > p2y) then
+      if (_isLeft(p0, p1, p2) > 0) then
+        return wn + 1
+      end
+    end
+  else
+    if (p1.y <= p2y) then
+      if (_isLeft(p0, p1, p2) < 0) then
+        return wn - 1
+      end
+    end
+  end
+  return wn
+end
+
+-- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
+local function _windingNumber(point, poly)
+  local wn = 0 -- winding number counter
+
+  -- loop through all edges of the polygon
+  for i = 1, #poly - 1 do
+    wn = _wn_inner_loop(poly[i], poly[i + 1], point, wn)
+  end
+  -- test last point to first point, completing the polygon
+  wn = _wn_inner_loop(poly[#poly], poly[1], point, wn)
+
+  -- the point is outside only when this winding number wn===0, otherwise it's inside
+  return wn ~= 0
+end
+
+-- Detects intersection between two lines
+local function _isIntersecting(a, b, c, d)
+  local ax_minus_cx = a.x - c.x
+  local bx_minus_ax = b.x - a.x
+  local dx_minus_cx = d.x - c.x
+  local ay_minus_cy = a.y - c.y
+  local by_minus_ay = b.y - a.y
+  local dy_minus_cy = d.y - c.y
+  local denominator = ((bx_minus_ax) * (dy_minus_cy)) - ((by_minus_ay) * (dx_minus_cx))
+  local numerator1 = ((ay_minus_cy) * (dx_minus_cx)) - ((ax_minus_cx) * (dy_minus_cy))
+  local numerator2 = ((ay_minus_cy) * (bx_minus_ax)) - ((ax_minus_cx) * (by_minus_ay))
+
+  -- Detect coincident lines
+  if denominator == 0 then return numerator1 == 0 and numerator2 == 0 end
+
+  local r = numerator1 / denominator
+  local s = numerator2 / denominator
+
+  return (r >= 0 and r <= 1) and (s >= 0 and s <= 1)
+end
+
+-- https://rosettacode.org/wiki/Shoelace_formula_for_polygonal_area#Lua
+local function _calculatePolygonArea(points)
+  local function det2(i,j)
+    return points[i].x*points[j].y-points[j].x*points[i].y
+  end
+  local sum = #points>2 and det2(#points,1) or 0
+  for i=1,#points-1 do sum = sum + det2(i,i+1)end
+  return math.abs(0.5 * sum)
+end
 
 
+-- Debug drawing functions
 local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   local bottomLeft = vector3(p1.x, p1.y, minZ)
   local topLeft = vector3(p1.x, p1.y, maxZ)
@@ -103,48 +174,6 @@ local function _drawGrid(poly)
 end
 
 
-local function _isLeft(p0, p1, p2)
-  local p0x = p0.x
-  local p0y = p0.y
-  return ((p1.x - p0x) * (p2.y - p0y)) - ((p2.x - p0x) * (p1.y - p0y))
-end
-
-
-local function _wn_inner_loop(p0, p1, p2, wn)
-  local p2y = p2.y
-  if (p0.y <= p2y) then
-    if (p1.y > p2y) then
-      if (_isLeft(p0, p1, p2) > 0) then
-        return wn + 1
-      end
-    end
-  else
-    if (p1.y <= p2y) then
-      if (_isLeft(p0, p1, p2) < 0) then
-        return wn - 1
-      end
-    end
-  end
-  return wn
-end
-
-
--- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
-local function _windingNumber(point, poly)
-  local wn = 0 -- winding number counter
-
-  -- loop through all edges of the polygon
-  for i = 1, #poly - 1 do
-    wn = _wn_inner_loop(poly[i], poly[i + 1], point, wn)
-  end
-  -- test last point to first point, completing the polygon
-  wn = _wn_inner_loop(poly[#poly], poly[1], point, wn)
-
-  -- the point is outside only when this winding number wn===0, otherwise it's inside
-  return wn ~= 0
-end
-
-
 local function _pointInPoly(point, poly)
   local x = point.x
   local y = point.y
@@ -183,28 +212,8 @@ local function _pointInPoly(point, poly)
   return _windingNumber(point, poly.points)
 end
 
--- Detects intersection between two lines
-local function _isIntersecting(a, b, c, d)
-  local ax_minus_cx = a.x - c.x
-  local bx_minus_ax = b.x - a.x
-  local dx_minus_cx = d.x - c.x
-  local ay_minus_cy = a.y - c.y
-  local by_minus_ay = b.y - a.y
-  local dy_minus_cy = d.y - c.y
-  local denominator = ((bx_minus_ax) * (dy_minus_cy)) - ((by_minus_ay) * (dx_minus_cx))
-  local numerator1 = ((ay_minus_cy) * (dx_minus_cx)) - ((ax_minus_cx) * (dy_minus_cy))
-  local numerator2 = ((ay_minus_cy) * (bx_minus_ax)) - ((ax_minus_cx) * (by_minus_ay))
 
-  -- Detect coincident lines
-  if denominator == 0 then return numerator1 == 0 and numerator2 == 0 end
-
-  local r = numerator1 / denominator
-  local s = numerator2 / denominator
-
-  return (r >= 0 and r <= 1) and (s >= 0 and s <= 1)
-end
-
-
+-- Grid creation functions
 -- Calculates the points of the rectangle that make up the grid cell at grid position (cellX, cellY)
 local function _calculateGridCellPoints(cellX, cellY, poly)
   local gridCellWidth = poly.gridCellWidth
@@ -354,17 +363,7 @@ local function _createGrid(poly, options)
 end
 
 
--- https://rosettacode.org/wiki/Shoelace_formula_for_polygonal_area#Lua
-function _calculatePolygonArea(points)
-  local function det2(i,j)
-    return points[i].x*points[j].y-points[j].x*points[i].y
-  end
-  local sum = #points>2 and det2(#points,1) or 0
-  for i=1,#points-1 do sum = sum + det2(i,i+1)end
-  return math.abs(0.5 * sum)
-end
-
-
+-- Initialization functions
 local function _calculatePoly(poly, options)
   local totalX = 0.0
   local totalY = 0.0
@@ -526,6 +525,8 @@ function PolyZone:isPointInside(point)
   return _pointInPoly(point, self)
 end
 
+
+-- Helper functions
 function PolyZone.getPlayerPosition()
   return GetEntityCoords(PlayerPedId())
 end
