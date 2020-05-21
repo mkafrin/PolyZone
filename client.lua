@@ -505,6 +505,14 @@ function UpdateOffsets(poly)
 end
 
 function PolyZone:isPointInside(point)
+  if self.entity then
+    UpdateOffsets(self)
+    local offsetPos = self.offsetPos
+    local offsetZ = offsetPos.z
+    local point2D = rotate(self.startPos.xy, point.xy - offsetPos.xy, -self.offsetRot)
+    return _pointInPoly(vector3(point2D.x, point2D.y, point.z - offsetZ), self)
+  end
+
   return _pointInPoly(point, self)
 end
 
@@ -526,7 +534,7 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
     local isInside = nil
     while true do
       local point = getPointCb()
-      local newIsInside = _pointInPoly(point, self)
+      local newIsInside = self:isPointInside(point)
       if newIsInside ~= isInside then
         onPointInOutCb(newIsInside, point)
         isInside = newIsInside
