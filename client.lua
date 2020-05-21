@@ -60,6 +60,7 @@ end
 
 -- Detects intersection between two lines
 local function _isIntersecting(a, b, c, d)
+  -- Store calculations in local variables for performance
   local ax_minus_cx = a.x - c.x
   local bx_minus_ax = b.x - a.x
   local dx_minus_cx = d.x - c.x
