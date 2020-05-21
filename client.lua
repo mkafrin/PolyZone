@@ -400,20 +400,13 @@ function _initDebug(poly, options)
   Citizen.CreateThread(function()
     if options.debugPoly or options.debugGrid then
       Citizen.CreateThread(function()
+        local isEntityZone = poly.entity ~= nil
         while true do
-          _drawPoly(poly)
-          Citizen.Wait(0)
-        end
-      end)
-    end
-    if options.debugGrid and poly.useGrid then
-      while not poly.grid do Citizen.Wait(0) end
-      local coverage = string.format("%.2f", poly.gridCoverage * 100)
-      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
-      .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
-      Citizen.CreateThread(function()
-        while true do
-          _drawGrid(poly)
+          if isEntityZone then UpdateOffsets(poly) end
+          _drawPoly(poly, isEntityZone)
+          if not isEntityZone and options.debugGrid and poly.lines then
+            _drawGrid(poly)
+          end
           Citizen.Wait(0)
         end
       end)
