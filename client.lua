@@ -446,13 +446,62 @@ function PolyZone:Create(points, options)
       walls = colors.walls or {0, 255, 0},
       outline = colors.outline or {255, 0, 0},
       grid = colors.grid or {255, 255, 255}
-    }
+    },
+    startPos = vector3(0.0, 0.0, 0.0),
+    offsetPos = vector3(0.0, 0.0, 0.0),
+    offsetRot = 0.0
   }
   _calculatePoly(poly, options)
   _initDebug(poly, options)
   setmetatable(poly, self)
   self.__index = self
   return poly
+end
+
+function PolyZone:CreateAroundEntity(entity, options)
+  local min, max = GetModelDimensions(GetEntityModel(entity))
+  local pos = GetEntityCoords(entity)
+  local scale = options.scale or vector3(1.0, 1.0, 1.0)
+  local offset = options.offset or vector3(0.0, 0.0, 0.0)
+  min = (min - offset) * scale
+  max = (max + offset) * scale
+
+  -- Bottom vertices
+  local p1 = pos.xy + vector2(min.x, min.y)
+  local p2 = pos.xy + vector2(max.x, min.y)
+  local p3 = pos.xy + vector2(max.x, max.y)
+  local p4 = pos.xy + vector2(min.x, max.y)
+  local points = {p1, p2, p3, p4}
+
+  if options.useZ ~= true then
+    local minLength = math.min(min.x, min.y, min.z)
+    local maxLength = math.max(max.x, max.y, max.z)
+    local length = math.max(maxLength, math.abs(minLength))
+    length = (length + offset.z) * scale.z
+    local minZ = pos.z - length
+    local maxZ = pos.z + length
+    options.minZ = minZ
+    options.maxZ = maxZ
+  else
+    options.minZ = nil
+    options.maxZ = nil
+  end
+
+  options.useGrid = false
+  local poly = PolyZone:Create(points, options)
+  poly.startPos = GetEntityCoords(entity)
+  poly.entity = entity
+  return poly
+end
+
+function UpdateOffsets(poly)
+  local entity = poly.entity
+  if entity ~= nil then -- Only do update if zone is actually an entity zone
+    local pos = GetEntityCoords(entity)
+    local rot = GetRotation(entity)
+    poly.offsetPos = pos - poly.startPos
+    poly.offsetRot = rot - 90.0
+  end
 end
 
 function PolyZone:isPointInside(point)
