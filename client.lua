@@ -76,8 +76,8 @@ local function _drawPoly(poly, isEntityZone)
 end
 
 
-function PolyZone.drawPoly(poly, opt)
-  _drawPoly(poly, opt)
+function PolyZone.drawPoly(poly)
+  _drawPoly(poly, false)
 end
 
 -- Debug drawing all grid cells that are completly within the polygon
