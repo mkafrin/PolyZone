@@ -246,6 +246,8 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
     local y = cellPoint.y
     if _windingNumber(cellPoint, poly.points) then
       isOnePointInPoly = true
+      -- If we are drawing the grid (poly.lines ~= nil), we need to go through all the points,
+      -- and therefore can't break out of the loop early
       if poly.lines then
         if not poly.gridXPoints[x] then poly.gridXPoints[x] = {} end
         if not poly.gridYPoints[y] then poly.gridYPoints[y] = {} end
@@ -269,6 +271,7 @@ local function _isGridCellInsidePoly(cellX, cellY, poly)
       end
     end
   end
+  
   return true
 end
 
