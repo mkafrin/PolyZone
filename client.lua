@@ -411,19 +411,20 @@ end
 
 
 function _initDebug(poly, options)
+  local debugEnabled = options.debugPoly or options.debugGrid
+  if not debugEnabled then
+    return
+  end
+  
   Citizen.CreateThread(function()
-    if options.debugPoly or options.debugGrid then
-      Citizen.CreateThread(function()
-        local isEntityZone = poly.entity ~= nil
-        while true do
-          if isEntityZone then UpdateOffsets(poly) end
-          _drawPoly(poly, isEntityZone)
-          if not isEntityZone and options.debugGrid and poly.lines then
-            _drawGrid(poly)
-          end
-          Citizen.Wait(0)
-        end
-      end)
+    local isEntityZone = poly.entity ~= nil
+    while true do
+      if isEntityZone then UpdateOffsets(poly) end
+      _drawPoly(poly, isEntityZone)
+      if not isEntityZone and options.debugGrid and poly.lines then
+        _drawGrid(poly)
+      end
+      Citizen.Wait(0)
     end
   end)
 end
