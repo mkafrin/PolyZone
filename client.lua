@@ -468,6 +468,10 @@ end
 
 function PolyZone:CreateAroundEntity(entity, options)
   local min, max = GetModelDimensions(GetEntityModel(entity))
+  local minLength = math.min(min.x, min.y, min.z)
+  local maxLength = math.max(max.x, max.y, max.z)
+  
+
   local pos = GetEntityCoords(entity)
   local scale = options.scale or vector3(1.0, 1.0, 1.0)
   local offset = options.offset or vector3(0.0, 0.0, 0.0)
@@ -481,9 +485,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   local p4 = pos.xy + vector2(min.x, max.y)
   local points = {p1, p2, p3, p4}
 
-  if options.useZ ~= true then
-    local minLength = math.min(min.x, min.y, min.z)
-    local maxLength = math.max(max.x, max.y, max.z)
+  if options.useZ == true then
     local length = math.max(maxLength, math.abs(minLength))
     length = (length + offset.z) * scale.z
     local minZ = pos.z - length
