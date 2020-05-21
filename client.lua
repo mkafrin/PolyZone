@@ -365,28 +365,13 @@ end
 
 -- Initialization functions
 local function _calculatePoly(poly, options)
-  local totalX = 0.0
-  local totalY = 0.0
-  local maxX
-  local maxY
-  local minX
-  local minY
-  for i, p in ipairs(poly.points) do
-    if not maxX or p.x > maxX then
-      maxX = p.x
-    end
-    if not maxY or p.y > maxY then
-      maxY = p.y
-    end
-    if not minX or p.x < minX then
-      minX = p.x
-    end
-    if not minY or p.y < minY then
-      minY = p.y
-    end
-
-    totalX = totalX + p.x
-    totalY = totalY + p.y
+  local minX, minY = math.mininteger, math.mininteger
+  local maxX, maxY = math.maxinteger, math.maxinteger
+  for _, p in ipairs(poly.points) do
+    minX = math.min(minX, p.x)
+    minY = math.min(minY, p.y)
+    maxX = math.max(maxX, p.x)
+    maxY = math.max(maxY, p.y)
   end
 
   poly.max = vector2(maxX, maxY)
