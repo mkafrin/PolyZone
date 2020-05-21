@@ -32,8 +32,7 @@ local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   DrawPoly(bottomRight,topLeft,bottomLeft,r,g,b,a)
 end
 
-local function _drawPoly(poly, opt)
-  opt = opt or {}
+local function _drawPoly(poly, isEntityZone)
   local zDrawDist = 45.0
   local oColor = poly.debugColors.outline
   local oR, oG, oB = oColor[1], oColor[2], oColor[3]
@@ -41,16 +40,26 @@ local function _drawPoly(poly, opt)
   local wR, wG, wB = wColor[1], wColor[2], wColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
+  local offsetPos = poly.offsetPos
   local minZ = poly.minZ or plyPos.z - zDrawDist
   local maxZ = poly.maxZ or plyPos.z + zDrawDist
+  if poly.minZ and poly.maxZ then
+    minZ = minZ + offsetPos.z
+    maxZ = maxZ + offsetPos.z
+  end
+  offsetPos = offsetPos.xy
+  local origin = poly.startPos.xy
+  local theta = poly.offsetRot
   
   local points = poly.points
   for i=1, #points do
     local point = points[i]
+    if isEntityZone then point = rotate(origin, point, theta) + offsetPos end
     DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
-    
+
     if i < #points then
       local p2 = points[i+1]
+      if isEntityZone then p2 = rotate(origin, p2, theta) + offsetPos end
       DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
       _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
     end
@@ -58,7 +67,9 @@ local function _drawPoly(poly, opt)
 
   if #points > 2 then
     local firstPoint = points[1]
+    if isEntityZone then firstPoint = rotate(origin, firstPoint, theta) + offsetPos end
     local lastPoint = points[#points]
+    if isEntityZone then lastPoint = rotate(origin, lastPoint, theta) + offsetPos end
     DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
     _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
   end
