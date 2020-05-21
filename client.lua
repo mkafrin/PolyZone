@@ -1,5 +1,17 @@
 PolyZone = {}
 
+local rad, cos, sin = math.rad, math.cos, math.sin
+local function rotate(origin, point, theta)
+  if theta == 0.0 then return point end
+
+  local p = point - origin
+  theta = rad(theta)
+  local cosTheta = cos(theta)
+  local sinTheta = sin(theta)
+  local x = p.x * cosTheta - p.y * sinTheta
+  local y = p.x * sinTheta + p.y * cosTheta
+  return vector2(x, y) + origin
+end
 local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   local bottomLeft = vector3(p1.x, p1.y, minZ)
   local topLeft = vector3(p1.x, p1.y, maxZ)
