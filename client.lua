@@ -1,7 +1,7 @@
 PolyZone = {}
 
 -- Utility functions
-local rad, cos, sin, deg, abs = math.rad, math.cos, math.sin, math.deg, math.abs
+local rad, cos, sin, deg, abs, atan2 = math.rad, math.cos, math.sin, math.deg, math.abs, math.atan2
 local function rotate(origin, point, theta)
   if theta == 0.0 then return point end
 
@@ -16,7 +16,7 @@ end
 
 local function GetRotation(entity)
   local fwdVector = GetEntityForwardVector(entity)
-  return deg(math.atan2(fwdVector.y, fwdVector.x))
+  return deg(atan2(fwdVector.y, fwdVector.x))
 end
 
 local function _isLeft(p0, p1, p2)
