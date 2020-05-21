@@ -368,8 +368,8 @@ end
 
 -- Initialization functions
 local function _calculatePoly(poly, options)
-  local minX, minY = math.mininteger, math.mininteger
-  local maxX, maxY = math.maxinteger, math.maxinteger
+  local minX, minY = math.maxinteger, math.maxinteger
+  local maxX, maxY = math.mininteger, math.mininteger
   for _, p in ipairs(poly.points) do
     minX = math.min(minX, p.x)
     minY = math.min(minY, p.y)
