@@ -12,6 +12,14 @@ local function rotate(origin, point, theta)
   local y = p.x * sinTheta + p.y * cosTheta
   return vector2(x, y) + origin
 end
+
+local function GetRotation(entity)
+  local fwdVector = GetEntityForwardVector(entity)
+  return math.deg(math.atan2(fwdVector.y, fwdVector.x))
+end
+
+
+
 local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   local bottomLeft = vector3(p1.x, p1.y, minZ)
   local topLeft = vector3(p1.x, p1.y, maxZ)
