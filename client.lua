@@ -330,35 +330,35 @@ end
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
 local function _createGrid(poly, options)
   Citizen.CreateThread(function()
-  -- Calculate all grid cells that are entirely inside the polygon
-  local isInside = {}
-  for y=1, poly.gridDivisions do
-    Citizen.Wait(0)
-    isInside[y] = {}
-    for x=1, poly.gridDivisions do
-      if _isGridCellInsidePoly(x-1, y-1, poly) then
-        poly.gridArea = poly.gridArea + poly.gridCellWidth * poly.gridCellHeight
-        isInside[y][x] = true
+    -- Calculate all grid cells that are entirely inside the polygon
+    local isInside = {}
+    local gridCellArea = poly.gridCellWidth * poly.gridCellHeight
+    for y=1, poly.gridDivisions do
+      Citizen.Wait(0)
+      isInside[y] = {}
+      for x=1, poly.gridDivisions do
+        if _isGridCellInsidePoly(x-1, y-1, poly) then
+          poly.gridArea = poly.gridArea + gridCellArea
+          isInside[y][x] = true
+        end
       end
     end
-  end
-  poly.grid = isInside
-  poly.gridCoverage = poly.gridArea / poly.area
-  -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
-  collectgarbage("collect")
+    poly.grid = isInside
+    poly.gridCoverage = poly.gridArea / poly.area
+    -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
+    collectgarbage("collect")
 
-  if options.debugGrid then
-    local coverage = string.format("%.2f", poly.gridCoverage * 100)
-    print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
-    .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
+    if options.debugGrid then
+      local coverage = string.format("%.2f", poly.gridCoverage * 100)
+      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
+      .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
 
-    Citizen.CreateThread(function()
-      poly.lines = _calculateLinesForDrawingGrid(poly)
-      -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
-      collectgarbage("collect")
-    end)
-  end
-  
+      Citizen.CreateThread(function()
+        poly.lines = _calculateLinesForDrawingGrid(poly)
+        -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
+        collectgarbage("collect")
+      end)
+    end
   end)
 end
 
