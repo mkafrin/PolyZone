@@ -339,6 +339,10 @@ local function _createGrid(poly, options)
   collectgarbage("collect")
 
   if options.debugGrid then
+    local coverage = string.format("%.2f", poly.gridCoverage * 100)
+    print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
+    .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
+
     Citizen.CreateThread(function()
       poly.lines = _calculateLinesForDrawingGrid(poly)
       -- A lot of memory is used by this pre-calc. Force a gc collect after to clear it out
