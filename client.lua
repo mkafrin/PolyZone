@@ -518,8 +518,19 @@ function PolyZone:isPointInside(point)
     UpdateOffsets(self)
     local offsetPos = self.offsetPos
     local offsetZ = offsetPos.z
-    local point2D = rotate(self.startPos.xy, point.xy - offsetPos.xy, -self.offsetRot)
-    return _pointInPoly(vector3(point2D.x, point2D.y, point.z - offsetZ), self)
+    local rotatedPoint = rotate(self.startPos.xy, point.xy - offsetPos.xy, -self.offsetRot)
+    local offsetPoint = vector3(rotatedPoint.x, rotatedPoint.y, point.z - offsetZ)
+    local pX, pY, pZ = offsetPoint.x, offsetPoint.y, offsetPoint.z
+    local min, max = self.min, self.max
+    local minX, minY, maxX, maxY = min.x, min.y, max.x, max.y
+    local minZ, maxZ = self.minZ, self.maxZ
+    if pX < minX or pX > maxX or pY < minY or pY > maxY then
+      return false
+    end
+    if (minZ and pZ < minZ) or (maxZ and pZ > maxZ) then
+      return false
+    end
+    return true
   end
 
   return _pointInPoly(point, self)
