@@ -1,7 +1,7 @@
 PolyZone = {}
 
 -- Utility functions
-local rad, cos, sin = math.rad, math.cos, math.sin
+local rad, cos, sin, deg, abs = math.rad, math.cos, math.sin, math.deg, math.abs
 local function rotate(origin, point, theta)
   if theta == 0.0 then return point end
 
@@ -16,7 +16,7 @@ end
 
 local function GetRotation(entity)
   local fwdVector = GetEntityForwardVector(entity)
-  return math.deg(math.atan2(fwdVector.y, fwdVector.x))
+  return deg(math.atan2(fwdVector.y, fwdVector.x))
 end
 
 local function _isLeft(p0, p1, p2)
@@ -86,7 +86,7 @@ local function _calculatePolygonArea(points)
   end
   local sum = #points>2 and det2(#points,1) or 0
   for i=1,#points-1 do sum = sum + det2(i,i+1)end
-  return math.abs(0.5 * sum)
+  return abs(0.5 * sum)
 end
 
 
@@ -485,7 +485,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   local points = {p1, p2, p3, p4}
 
   if options.useZ == true then
-    local length = math.max(maxLength, math.abs(minLength))
+    local length = math.max(maxLength, abs(minLength))
     length = (length + offset.z) * scale.z
     local minZ = pos.z - length
     local maxZ = pos.z + length
