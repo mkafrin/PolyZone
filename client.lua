@@ -406,9 +406,10 @@ function _initDebug(poly, options)
   end
   
   Citizen.CreateThread(function()
-    local isEntityZone = poly.entity ~= nil
+    local entity = poly.entity
+    local isEntityZone = entity ~= nil
     while true do
-      if isEntityZone then UpdateOffsets(poly) end
+      if isEntityZone then UpdateOffsets(entity, poly) end
       _drawPoly(poly, isEntityZone)
       if not isEntityZone and options.debugGrid and poly.lines then
         _drawGrid(poly)
@@ -516,19 +517,17 @@ function CalculateScaleAndOffset(options)
   return minOffset, maxOffset, minScale, maxScale
 end
 
-function UpdateOffsets(poly)
-  local entity = poly.entity
-  if entity ~= nil then -- Only do update if zone is actually an entity zone
-    local pos = GetEntityCoords(entity)
-    local rot = GetRotation(entity)
-    poly.offsetPos = pos - poly.startPos
-    poly.offsetRot = rot - 90.0
-  end
+function UpdateOffsets(entity, poly)
+  local pos = GetEntityCoords(entity)
+  local rot = GetRotation(entity)
+  poly.offsetPos = pos - poly.startPos
+  poly.offsetRot = rot - 90.0
 end
 
 function PolyZone:isPointInside(point)
-  if self.entity then
-    UpdateOffsets(self)
+  local entity = self.entity
+  if entity then
+    UpdateOffsets(entity, self)
     local offsetPos = self.offsetPos
     local offsetZ = offsetPos.z
     local rotatedPoint = rotate(self.startPos.xy, point.xy - offsetPos.xy, -self.offsetRot)
