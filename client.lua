@@ -464,10 +464,10 @@ function PolyZone:CreateAroundEntity(entity, options)
   
 
   local pos = GetEntityCoords(entity)
-  local scale = options.scale or vector3(1.0, 1.0, 1.0)
-  local offset = options.offset or vector3(0.0, 0.0, 0.0)
-  min = (min - offset) * scale
-  max = (max + offset) * scale
+  local minOffset, maxOffset, minScale, maxScale = CalculateScaleAndOffset(options)
+  
+  min = (min - minOffset) * minScale
+  max = (max + maxOffset) * maxScale
 
   -- Bottom vertices
   local p1 = pos.xy + vector2(min.x, min.y)
@@ -478,9 +478,10 @@ function PolyZone:CreateAroundEntity(entity, options)
 
   if options.useZ == true then
     local length = math.max(maxLength, abs(minLength))
-    length = (length + offset.z) * scale.z
-    local minZ = pos.z - length
-    local maxZ = pos.z + length
+    minLength = (length + minOffset.z) * minScale.z
+    maxLength = (length + maxOffset.z) * maxScale.z
+    local minZ = pos.z - minLength
+    local maxZ = pos.z + maxLength
     options.minZ = minZ
     options.maxZ = maxZ
   else
@@ -493,6 +494,26 @@ function PolyZone:CreateAroundEntity(entity, options)
   poly.startPos = GetEntityCoords(entity)
   poly.entity = entity
   return poly
+end
+
+function CalculateScaleAndOffset(options)
+  -- Scale and offset tables are both formatted as {forward, back, left, right, up, down}
+  -- or if symmetrical {forward/back, left/right, up/down}
+  local scale = options.scale or {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
+  local offset = options.offset or {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+  assert(#scale ~= 3 or #scale ~= 6, "Scale must be of length 3 or 6")
+  assert(#offset ~= 3 or #offset ~= 6, "Offset must be of length 3 or 6")
+  if #scale == 3 then
+    scale = {scale[1], scale[1], scale[2], scale[2], scale[3], scale[3]}
+  end
+  if #offset == 3 then
+    offset = {offset[1], offset[1], offset[2], offset[2], offset[3], offset[3]}
+  end
+  local minOffset = vector3(offset[3], offset[2], offset[6])
+  local maxOffset = vector3(offset[4], offset[1], offset[5])
+  local minScale = vector3(scale[3], scale[2], scale[6])
+  local maxScale = vector3(scale[4], scale[1], scale[5])
+  return minOffset, maxOffset, minScale, maxScale
 end
 
 function UpdateOffsets(poly)
