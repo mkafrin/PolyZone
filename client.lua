@@ -456,6 +456,8 @@ function PolyZone:Create(points, options)
 end
 
 function PolyZone:CreateAroundEntity(entity, options)
+  assert(DoesEntityExist(entity), "Entity does not exist")
+
   local min, max = GetModelDimensions(GetEntityModel(entity))
   local minLength = math.min(min.x, min.y, min.z)
   local maxLength = math.max(max.x, max.y, max.z)
