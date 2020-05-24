@@ -408,7 +408,7 @@ function _initDebug(poly, options)
   Citizen.CreateThread(function()
     local entity = poly.entity
     local isEntityZone = entity ~= nil
-    while true do
+    while not poly.destroyed do
       if isEntityZone then UpdateOffsets(entity, poly) end
       _drawPoly(poly, isEntityZone)
       if not isEntityZone and options.debugGrid and poly.lines then
@@ -525,6 +525,11 @@ function UpdateOffsets(entity, poly)
 end
 
 function PolyZone:isPointInside(point)
+  if self.destroyed then
+    print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
+    return false 
+  end
+
   local entity = self.entity
   if entity then
     UpdateOffsets(entity, self)
@@ -548,6 +553,10 @@ function PolyZone:isPointInside(point)
   return _pointInPoly(point, self)
 end
 
+function PolyZone:destroy()
+  self.destroyed = true
+end
+
 
 -- Helper functions
 function PolyZone.getPlayerPosition()
@@ -566,7 +575,7 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
 
   Citizen.CreateThread(function()
     local isInside = nil
-    while true do
+    while not self.destroyed do
       local point = getPointCb()
       local newIsInside = self:isPointInside(point)
       if newIsInside ~= isInside then
