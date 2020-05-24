@@ -57,6 +57,9 @@ AddEventHandler("polyzone:polyundo", function()
   end
 
   createdShape.points[#createdShape.points] = nil
+  if #createdShape.points == 0 then
+    TriggerEvent("polyzone:polycancel")
+  end
 end)
 
 RegisterNetEvent("polyzone:polyfinish")
