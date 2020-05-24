@@ -354,7 +354,7 @@ local function _createGrid(poly, options)
 
     if options.debugGrid then
       local coverage = string.format("%.2f", poly.gridCoverage * 100)
-      print("[PolyZone] Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
+      print("[PolyZone] Debug: Grid Coverage at " .. coverage .. "% with " .. poly.gridDivisions
       .. " divisions. Optimal coverage for memory usage and startup time is 80-90%")
 
       Citizen.CreateThread(function()
@@ -445,6 +445,8 @@ function PolyZone:Create(points, options)
       outline = colors.outline or {255, 0, 0},
       grid = colors.grid or {255, 255, 255}
     },
+    debugPoly = options.debugPoly or false,
+    debugGrid = options.debugGrid or false,
     startPos = vector3(0.0, 0.0, 0.0),
     offsetPos = vector3(0.0, 0.0, 0.0),
     offsetRot = 0.0
@@ -555,6 +557,9 @@ end
 
 function PolyZone:destroy()
   self.destroyed = true
+  if self.debugPoly or self.debugGrid then
+    print("[PolyZone] Debug: Destroying zone {name=" .. self.name .. "}")
+  end
 end
 
 
