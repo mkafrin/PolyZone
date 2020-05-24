@@ -16,7 +16,15 @@ AddEventHandler("polyzone:polystart", function(name)
 
   createdShape = {
     points = {vector2(coords.x, coords.y)},
-    options = {minZ = coords.z, maxZ = coords.z, name = tostring(name)}
+    options = {minZ = coords.z, maxZ = coords.z, name = tostring(name)},
+    debugColors = {
+      walls = {0, 255, 0},
+      outline = {255, 0, 0},
+      grid = {255, 255, 255}
+    },
+    startPos = vector3(0.0, 0.0, 0.0),
+    offsetPos = vector3(0.0, 0.0, 0.0),
+    offsetRot = 0.0
   }
 
   drawShape = true
@@ -89,7 +97,7 @@ end)
 function drawThread()
   Citizen.CreateThread(function()
     while drawShape do
-      PolyZone.drawPoly(createdShape, {drawPoints=true})
+      PolyZone.drawPoly(createdShape)
       Citizen.Wait(1)
     end
   end)
