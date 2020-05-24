@@ -146,6 +146,14 @@ end
 ```
 This function will return the position of the vehicle the player is currently in. Note that this is just an example, and in reality, `PolyZone.getPlayerPosition` will do this anyways.
 
+### Destroying a PolyZone Instance
+Destroying a PolyZone instance will stop any threads associated with that zone, including debug drawing, onPointInOut helpers, etc. It will also set a `destroyed` flag on the zone to true. This probably makes more sense to use on an entity zone, but it can be used for any PolyZone instance:
+
+```lua
+pinkcage:destroy()
+```
+Note: If you try to call `isPointInside` on a destroyed zone, it will return false, and emit a warning.
+
 ### Additional Helper Functions
 Lastly, there are a few additional helper functions that expose some internal variables, in case you might have a use for them. These functions are all based on the bounding box that surrounds the zone and are:
 
