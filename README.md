@@ -49,6 +49,31 @@ Note: The points MUST be in sequential order. You could write down the points yo
 | debugColors.outline | Table   | {255, 0, 0}                                                                     | false    | Color of the outline of the zone's walls                                                                                                                                                                                                                            |
 | debugColors.grid    | Table   | {255, 255, 255}                                                                 | false    | Color of the zone's optimization grid                                                                                                                                                                                                                               |
 
+### Creating a PolyZone instance Around an Entity
+An "Entity Zone" is created by invoking the CreateAroundEntity method, and passing in an entity (Ped, Vehicle, etc) and a table of options:
+
+```lua
+local vehicle = GetVehiclePedIsIn(PlayerPedId())
+local entityZone = PolyZone:CreateAroundEntity(vehicle, {
+	name="entity_zone",
+	useZ=false,
+	offset={0.0, 0.0, 0.0},
+	scale={1.0, 1.0, 1.0},
+	debugPoly=false,
+})
+```
+Note: Entity zones follow the position and rotation of the entity. Entity zones don't use the grid optimization, since all entity zones are simple bounding boxes. Because of this, use the `debugPoly` option to enable debug drawing, instead of `debugGrid`. Any option that can be passed into regular PolyZones can be passed into entity zones, though any grid related options and minZ/maxZ are ignored. There are a few additional options for entity zones, seen in the table below.
+
+### Options for a PolyZone instance Around an Entity
+
+| Property | Type    | &nbsp;&nbsp;&nbsp;&nbsp;Default&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                                                                                                                                                                        |
+|----------|---------|---------------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| useZ     | Boolean | false                                                   | false    | You can't specify a minZ or maxZ for entity zones. Instead, they will be automatically calculated if you set this option to true                                                                                                                                                   |
+| offset   | Table   | {0.0, 0.0, 0.0}                                         | false    | A table of numbers to offset the entity zone by an absolute amount. This table can either contain 6 numbers, with the layout being {forward, back, left, right, up, down}, or 3 numbers if you want symmetrical offsets, with the layout being {forward/back, left/right, up/down} |
+| scale    | Table   | {1.0, 1.0, 1.0}                                         | false    | Same as the offset option, but scales the entity zone, instead of offsetting it                                                                                                                                                                                                    |
+
+
+
 
 
 ### Testing a point with PolyZone
