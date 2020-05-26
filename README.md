@@ -2,7 +2,6 @@
 PolyZone is a FiveM mod to define polygonal zones and test whether a point is inside or outside of the zone
 
 ![PolyZone around the prison](https://i.imgur.com/InKNaoL.jpg)
-![PolyZone entity zones around several cars](https://i.imgur.com/SOgKkRD.jpg)
 
 ### Using PolyZone in a script
 In order to use PolyZone in your script, you must include PolyZone's client.lua directly in your __resource.lua. You can do that by using FiveM's @ syntax for including resources:
