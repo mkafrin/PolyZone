@@ -22,8 +22,8 @@ AddEventHandler("polyzone:polystart", function(name)
       outline = {255, 0, 0},
       grid = {255, 255, 255}
     },
-    startPos = vector3(0.0, 0.0, 0.0),
-    offsetPos = vector3(0.0, 0.0, 0.0),
+    startPos = vector2(0.0, 0.0),
+    offsetPos = vector2(0.0, 0.0),
     offsetRot = 0.0
   }
 
