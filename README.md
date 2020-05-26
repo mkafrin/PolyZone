@@ -3,7 +3,7 @@ PolyZone is a FiveM mod to define polygonal zones and test whether a point is in
 
 ![PolyZone around the prison](https://i.imgur.com/InKNaoL.jpg)
 
-### Using PolyZone in a script
+### Using PolyZone in a Script
 In order to use PolyZone in your script, you must include PolyZone's client.lua directly in your __resource.lua. You can do that by using FiveM's @ syntax for including resources:
 
 ```lua
@@ -13,7 +13,7 @@ client_scripts {
 }
 ```
 
-### Creating a PolyZone instance
+### Creating a PolyZone Instance
 A PolyZone is created by invoking the Create method, and passing in a table of vector2s and a table of options:
 
 ```lua
@@ -34,7 +34,7 @@ local pinkcage = PolyZone:Create({
 ```
 Note: The points MUST be in sequential order. You could write down the points yourself, but PolyZone comes with a creation script that will auto-generate the code for you. Just use the commands `/polystart`, `/polyadd`, and `/polyfinish` to create a new PolyZone, and see the points you are adding in game! If you mess up a point, you can use `/polyundo`, and if you want to cancel the whole thing, just use `/polycancel`.
 
-### Options for a PolyZone instance
+### Options for a PolyZone Instance
 
 | Property            | Type    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                                                                                                                                                         |
 |---------------------|---------|---------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -49,7 +49,7 @@ Note: The points MUST be in sequential order. You could write down the points yo
 | debugColors.outline | Table   | {255, 0, 0}                                                                     | false    | Color of the outline of the zone's walls                                                                                                                                                                                                                            |
 | debugColors.grid    | Table   | {255, 255, 255}                                                                 | false    | Color of the zone's optimization grid                                                                                                                                                                                                                               |
 
-### Creating a PolyZone instance Around an Entity
+### Creating a PolyZone Instance Around an Entity
 An "Entity Zone" is created by invoking the CreateAroundEntity method, and passing in an entity (Ped, Vehicle, etc) and a table of options:
 
 ```lua
@@ -64,7 +64,7 @@ local entityZone = PolyZone:CreateAroundEntity(vehicle, {
 ```
 Note: Entity zones follow the position and rotation of the entity. Entity zones don't use the grid optimization, since all entity zones are simple bounding boxes. Because of this, use the `debugPoly` option to enable debug drawing, instead of `debugGrid`. Any option that can be passed into regular PolyZones can be passed into entity zones, though any grid related options and minZ/maxZ are ignored. There are a few additional options for entity zones, seen in the table below.
 
-### Options for a PolyZone instance Around an Entity
+### Options for a PolyZone Instance Around an Entity
 
 | Property | Type    | &nbsp;&nbsp;&nbsp;&nbsp;Default&nbsp;&nbsp;&nbsp;&nbsp; | Required | Description                                                                                                                                                                                                                                                                        |
 |----------|---------|---------------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -76,7 +76,7 @@ Note: An entity zone is scaled before it is offset. Therefore a direction's leng
 
 
 
-### Testing a point with PolyZone
+### Testing a Point with PolyZone
 There is two ways to test whether a point is inside the zone. There is a more manual way, which includes directly using the isPointInside method on a particular zone, and then there is a helper function which remove some of that boilerplate.
 
 Assuming we are using the "pinkcage" zone from above, the manual way to check if a point is inside the zone is as follows:
