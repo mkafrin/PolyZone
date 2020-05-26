@@ -90,6 +90,48 @@ local function _calculatePolygonArea(points)
   return abs(0.5 * sum)
 end
 
+function _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
+  local min, max = dimensions[1], dimensions[2]
+  local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
+
+  -- Bottom vertices
+  local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
+  local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
+  local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
+  local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
+
+  -- Top vertices
+  local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
+  local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
+  local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
+  local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
+  local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
+  minZ = minZ * scaleZ[1] - offsetZ[1]
+  local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
+  maxZ = maxZ * scaleZ[2] + offsetZ[2]
+  return pos.z - minZ, pos.z + maxZ
+end
+
+function _calculateScaleAndOffset(options)
+  -- Scale and offset tables are both formatted as {forward, back, left, right, up, down}
+  -- or if symmetrical {forward/back, left/right, up/down}
+  local scale = options.scale or {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
+  local offset = options.offset or {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+  assert(#scale == 3 or #scale == 6, "Scale must be of length 3 or 6")
+  assert(#offset == 3 or #offset == 6, "Offset must be of length 3 or 6")
+  if #scale == 3 then
+    scale = {scale[1], scale[1], scale[2], scale[2], scale[3], scale[3]}
+  end
+  if #offset == 3 then
+    offset = {offset[1], offset[1], offset[2], offset[2], offset[3], offset[3]}
+  end
+  local minOffset = vector3(offset[3], offset[2], offset[6])
+  local maxOffset = vector3(offset[4], offset[1], offset[5])
+  local minScale = vector3(scale[3], scale[2], scale[6])
+  local maxScale = vector3(scale[4], scale[1], scale[5])
+  return minOffset, maxOffset, minScale, maxScale
+end
+
 
 -- Debug drawing functions
 local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
@@ -463,7 +505,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   
 
   local pos = GetEntityCoords(entity)
-  local minOffset, maxOffset, minScale, maxScale = CalculateScaleAndOffset(options)
+  local minOffset, maxOffset, minScale, maxScale = _calculateScaleAndOffset(options)
   local scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
   
   min = min * minScale - minOffset
@@ -477,7 +519,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   local points = {p1, p2, p3, p4}
 
   if options.useZ == true then
-    options.minZ, options.maxZ = CalculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
+    options.minZ, options.maxZ = _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
   else
     options.minZ = nil
     options.maxZ = nil
@@ -493,48 +535,6 @@ function PolyZone:CreateAroundEntity(entity, options)
   return poly
 end
 
-function CalculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
-  local min, max = dimensions[1], dimensions[2]
-  local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
-
-  -- Bottom vertices
-  local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
-  local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
-  local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
-  local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
-
-  -- Top vertices
-  local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
-  local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
-  local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
-  local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
-  local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
-  minZ = minZ * scaleZ[1] - offsetZ[1]
-  local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
-  maxZ = maxZ * scaleZ[2] + offsetZ[2]
-  return pos.z - minZ, pos.z + maxZ
-end
-
-function CalculateScaleAndOffset(options)
-  -- Scale and offset tables are both formatted as {forward, back, left, right, up, down}
-  -- or if symmetrical {forward/back, left/right, up/down}
-  local scale = options.scale or {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
-  local offset = options.offset or {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-  assert(#scale == 3 or #scale == 6, "Scale must be of length 3 or 6")
-  assert(#offset == 3 or #offset == 6, "Offset must be of length 3 or 6")
-  if #scale == 3 then
-    scale = {scale[1], scale[1], scale[2], scale[2], scale[3], scale[3]}
-  end
-  if #offset == 3 then
-    offset = {offset[1], offset[1], offset[2], offset[2], offset[3], offset[3]}
-  end
-  local minOffset = vector3(offset[3], offset[2], offset[6])
-  local maxOffset = vector3(offset[4], offset[1], offset[5])
-  local minScale = vector3(scale[3], scale[2], scale[6])
-  local maxScale = vector3(scale[4], scale[1], scale[5])
-  return minOffset, maxOffset, minScale, maxScale
-end
-
 function UpdateOffsets(entity, poly)
   local pos = GetEntityCoords(entity)
   local rot = GetRotation(entity)
@@ -542,7 +542,7 @@ function UpdateOffsets(entity, poly)
   poly.offsetRot = rot - 90.0
 
   if poly.useZ then
-    poly.minZ, poly.maxZ = CalculateMinAndMaxZ(entity, poly.dimensions, poly.scaleZ, poly.offsetZ, pos)
+    poly.minZ, poly.maxZ = _calculateMinAndMaxZ(entity, poly.dimensions, poly.scaleZ, poly.offsetZ, pos)
   end
 end
 
