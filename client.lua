@@ -115,12 +115,7 @@ local function _drawPoly(poly, isEntityZone)
   local offsetPos = poly.offsetPos
   local minZ = poly.minZ or plyPos.z - zDrawDist
   local maxZ = poly.maxZ or plyPos.z + zDrawDist
-  if poly.minZ and poly.maxZ then
-    minZ = minZ + offsetPos.z
-    maxZ = maxZ + offsetPos.z
-  end
-  offsetPos = offsetPos.xy
-  local origin = poly.startPos.xy
+  local origin = poly.startPos
   local theta = poly.offsetRot
   
   local points = poly.points
@@ -447,8 +442,8 @@ function PolyZone:Create(points, options)
     },
     debugPoly = options.debugPoly or false,
     debugGrid = options.debugGrid or false,
-    startPos = vector3(0.0, 0.0, 0.0),
-    offsetPos = vector3(0.0, 0.0, 0.0),
+    startPos = vector2(0.0, 0.0),
+    offsetPos = vector2(0.0, 0.0),
     offsetRot = 0.0
   }
   _calculatePoly(poly, options)
@@ -462,6 +457,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   assert(DoesEntityExist(entity), "Entity does not exist")
 
   local min, max = GetModelDimensions(GetEntityModel(entity))
+  local dimensions = {min, max}
   local minLength = math.min(min.x, min.y, min.z)
   local maxLength = math.max(max.x, max.y, max.z)
   
@@ -469,8 +465,8 @@ function PolyZone:CreateAroundEntity(entity, options)
   local pos = GetEntityCoords(entity)
   local minOffset, maxOffset, minScale, maxScale = CalculateScaleAndOffset(options)
   
-  min = (min - minOffset) * minScale
-  max = (max + maxOffset) * maxScale
+  min = min * minScale - minOffset
+  max = max * maxScale + maxOffset
 
   -- Bottom vertices
   local p1 = pos.xy + vector2(min.x, min.y)
@@ -494,8 +490,11 @@ function PolyZone:CreateAroundEntity(entity, options)
 
   options.useGrid = false
   local poly = PolyZone:Create(points, options)
-  poly.startPos = GetEntityCoords(entity)
+  poly.startPos = GetEntityCoords(entity).xy
   poly.entity = entity
+  poly.dimensions = dimensions
+  poly.useZ = options.useZ
+  poly.offsetZ, poly.scaleZ = {minOffset.z, maxOffset.z}, {minScale.z, maxScale.z}
   return poly
 end
 
@@ -522,8 +521,34 @@ end
 function UpdateOffsets(entity, poly)
   local pos = GetEntityCoords(entity)
   local rot = GetRotation(entity)
-  poly.offsetPos = pos - poly.startPos
+  poly.offsetPos = pos.xy - poly.startPos
   poly.offsetRot = rot - 90.0
+
+  if poly.useZ then
+    local scaleZ, offsetZ = poly.scaleZ, poly.offsetZ
+    local dimensions = poly.dimensions
+    local min, max = dimensions[1], dimensions[2]
+
+    local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
+
+    -- Bottom vertices
+    local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
+    local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
+    local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
+    local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
+
+    -- Top vertices
+    local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
+    local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
+    local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
+    local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
+    local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
+    minZ = minZ * scaleZ[1] - offsetZ[1]
+    local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
+    maxZ = maxZ * scaleZ[2] + offsetZ[2]
+    poly.minZ = pos.z - minZ
+    poly.maxZ = pos.z + maxZ
+  end
 end
 
 function PolyZone:isPointInside(point)
@@ -535,11 +560,8 @@ function PolyZone:isPointInside(point)
   local entity = self.entity
   if entity then
     UpdateOffsets(entity, self)
-    local offsetPos = self.offsetPos
-    local offsetZ = offsetPos.z
-    local rotatedPoint = rotate(self.startPos.xy, point.xy - offsetPos.xy, -self.offsetRot)
-    local offsetPoint = vector3(rotatedPoint.x, rotatedPoint.y, point.z - offsetZ)
-    local pX, pY, pZ = offsetPoint.x, offsetPoint.y, offsetPoint.z
+    local rotatedPoint = rotate(self.startPos, point.xy - self.offsetPos, -self.offsetRot)
+    local pX, pY, pZ = rotatedPoint.x, rotatedPoint.y, point.z
     local min, max = self.min, self.max
     local minX, minY, maxX, maxY = min.x, min.y, max.x, max.y
     local minZ, maxZ = self.minZ, self.maxZ
