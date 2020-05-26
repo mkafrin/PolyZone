@@ -504,8 +504,8 @@ function CalculateScaleAndOffset(options)
   -- or if symmetrical {forward/back, left/right, up/down}
   local scale = options.scale or {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
   local offset = options.offset or {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-  assert(#scale ~= 3 or #scale ~= 6, "Scale must be of length 3 or 6")
-  assert(#offset ~= 3 or #offset ~= 6, "Offset must be of length 3 or 6")
+  assert(#scale == 3 or #scale == 6, "Scale must be of length 3 or 6")
+  assert(#offset == 3 or #offset == 6, "Offset must be of length 3 or 6")
   if #scale == 3 then
     scale = {scale[1], scale[1], scale[2], scale[2], scale[3], scale[3]}
   end
