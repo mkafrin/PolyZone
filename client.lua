@@ -464,6 +464,7 @@ function PolyZone:CreateAroundEntity(entity, options)
 
   local pos = GetEntityCoords(entity)
   local minOffset, maxOffset, minScale, maxScale = CalculateScaleAndOffset(options)
+  local scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
   
   min = min * minScale - minOffset
   max = max * maxScale + maxOffset
@@ -476,13 +477,7 @@ function PolyZone:CreateAroundEntity(entity, options)
   local points = {p1, p2, p3, p4}
 
   if options.useZ == true then
-    local length = math.max(maxLength, abs(minLength))
-    minLength = (length + minOffset.z) * minScale.z
-    maxLength = (length + maxOffset.z) * maxScale.z
-    local minZ = pos.z - minLength
-    local maxZ = pos.z + maxLength
-    options.minZ = minZ
-    options.maxZ = maxZ
+    options.minZ, options.maxZ = CalculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
   else
     options.minZ = nil
     options.maxZ = nil
@@ -494,8 +489,30 @@ function PolyZone:CreateAroundEntity(entity, options)
   poly.entity = entity
   poly.dimensions = dimensions
   poly.useZ = options.useZ
-  poly.offsetZ, poly.scaleZ = {minOffset.z, maxOffset.z}, {minScale.z, maxScale.z}
+  poly.scaleZ, poly.offsetZ = scaleZ, offsetZ
   return poly
+end
+
+function CalculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
+  local min, max = dimensions[1], dimensions[2]
+  local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
+
+  -- Bottom vertices
+  local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
+  local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
+  local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
+  local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
+
+  -- Top vertices
+  local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
+  local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
+  local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
+  local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
+  local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
+  minZ = minZ * scaleZ[1] - offsetZ[1]
+  local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
+  maxZ = maxZ * scaleZ[2] + offsetZ[2]
+  return pos.z - minZ, pos.z + maxZ
 end
 
 function CalculateScaleAndOffset(options)
@@ -525,29 +542,7 @@ function UpdateOffsets(entity, poly)
   poly.offsetRot = rot - 90.0
 
   if poly.useZ then
-    local scaleZ, offsetZ = poly.scaleZ, poly.offsetZ
-    local dimensions = poly.dimensions
-    local min, max = dimensions[1], dimensions[2]
-
-    local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
-
-    -- Bottom vertices
-    local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
-    local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
-    local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
-    local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
-
-    -- Top vertices
-    local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
-    local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
-    local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
-    local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
-    local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
-    minZ = minZ * scaleZ[1] - offsetZ[1]
-    local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
-    maxZ = maxZ * scaleZ[2] + offsetZ[2]
-    poly.minZ = pos.z - minZ
-    poly.maxZ = pos.z + maxZ
+    poly.minZ, poly.maxZ = CalculateMinAndMaxZ(entity, poly.dimensions, poly.scaleZ, poly.offsetZ, pos)
   end
 end
 
