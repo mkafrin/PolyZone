@@ -72,7 +72,7 @@ Note: Entity zones follow the position and rotation of the entity. Entity zones 
 | offset   | Table   | {0.0, 0.0, 0.0}                                         | false    | A table of numbers to offset the entity zone by an absolute amount. This table can either contain 6 numbers, with the layout being {forward, back, left, right, up, down}, or 3 numbers if you want symmetrical offsets, with the layout being {forward/back, left/right, up/down} |
 | scale    | Table   | {1.0, 1.0, 1.0}                                         | false    | Same as the offset option, but scales the entity zone, instead of offsetting it                                                                                                                                                                                                    |
 
-
+Note: An entity zone is scaled before it is offset. Therefore a direction's length is calculated as `directionLength * directionScale + directionOffset`
 
 
 
