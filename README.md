@@ -8,8 +8,8 @@ In order to use PolyZone in your script, you must include PolyZone's client.lua 
 
 ```lua
 client_scripts {
-	'@PolyZone/client.lua',
-	'your_scripts_client.lua',
+    '@PolyZone/client.lua',
+    'your_scripts_client.lua',
 }
 ```
 
@@ -18,18 +18,18 @@ A PolyZone is created by invoking the Create method, and passing in a table of v
 
 ```lua
 local pinkcage = PolyZone:Create({
-	vector2(328.41662597656, -189.42219543457),
-	vector2(347.90512084961, -196.81504821777),
-	vector2(336.11190795898, -227.95924377441),
-	vector2(306.11798095703, -216.42715454102),
-	vector2(314.41293334961, -194.19380187988),
-	vector2(324.84567260742, -198.19834899902)
+    vector2(328.41662597656, -189.42219543457),
+    vector2(347.90512084961, -196.81504821777),
+    vector2(336.11190795898, -227.95924377441),
+    vector2(306.11798095703, -216.42715454102),
+    vector2(314.41293334961, -194.19380187988),
+    vector2(324.84567260742, -198.19834899902)
 }, {
-	name="pink_cage",
-	minZ=51.0,
-	maxZ=62.0,
-	debugGrid=false,
-	gridDivisions=25
+    name="pink_cage",
+    minZ=51.0,
+    maxZ=62.0,
+    debugGrid=false,
+    gridDivisions=25
 })
 ```
 Note: The points MUST be in sequential order. You could write down the points yourself, but PolyZone comes with a creation script that will auto-generate the code for you. Just use the commands `/polystart`, `/polyadd`, and `/polyfinish` to create a new PolyZone, and see the points you are adding in game! If you mess up a point, you can use `/polyundo`, and if you want to cancel the whole thing, just use `/polycancel`.
@@ -55,11 +55,11 @@ An "Entity Zone" is created by invoking the CreateAroundEntity method, and passi
 ```lua
 local vehicle = GetVehiclePedIsIn(PlayerPedId())
 local entityZone = PolyZone:CreateAroundEntity(vehicle, {
-	name="entity_zone",
-	useZ=false,
-	offset={0.0, 0.0, 0.0},
-	scale={1.0, 1.0, 1.0},
-	debugPoly=false,
+    name="entity_zone",
+    useZ=false,
+    offset={0.0, 0.0, 0.0},
+    scale={1.0, 1.0, 1.0},
+    debugPoly=false,
 })
 ```
 Note: Entity zones follow the position and rotation of the entity. Entity zones don't use the grid optimization, since all entity zones are simple bounding boxes. Because of this, use the `debugPoly` option to enable debug drawing, instead of `debugGrid`. Any option that can be passed into regular PolyZones can be passed into entity zones, though any grid related options and minZ/maxZ are ignored. There are a few additional options for entity zones, seen in the table below.
@@ -84,12 +84,12 @@ Assuming we are using the "pinkcage" zone from above, the manual way to check if
 ```lua
 local insidePinkCage = false
 Citizen.CreateThread(function()
-	while true do
-		local plyPed = PlayerPedId()
-		local coord = GetEntityCoords(plyPed)
-		insidePinkCage = pinkcage:isPointInside(coord)
-		Citizen.Wait(500)
-	end
+    while true do
+        local plyPed = PlayerPedId()
+	local coord = GetEntityCoords(plyPed)
+	insidePinkCage = pinkcage:isPointInside(coord)
+	Citizen.Wait(500)
+    end
 end)    
 ```
 "insidePinkCage" will be updated every 500 ms with whether the player's position is inside or outside the zone
@@ -98,7 +98,7 @@ The way to do this with the helper function is as follows:
 ```lua
 local insidePinkCage = false
 pinkcage:onPointInOut(PolyZone.getPlayerPosition, function(isPointInside, point)
-	insidePinkCage = isPointInside
+    insidePinkCage = isPointInside
 end)
 ```
 `onPointInOut` is the helper function we're using here, and it will trigger the callback function we passed in `function(isPointInside, point)` every time the point enters or exits the zone
@@ -111,11 +111,11 @@ The nice thing about `onPointInOut` is that the `isPointInside` parameter of the
 
 ```lua
 pinkcage:onPointInOut(PolyZone.getPlayerPosition, function(isPointInside, point)
-	if isPointInside then
-		-- Point has just entered the zone
-	else
-		-- Point has just left the zone
-	end
+    if isPointInside then
+	-- Point has just entered the zone
+    else
+	-- Point has just left the zone
+    end
 end)
 ```
 
@@ -124,7 +124,7 @@ An optional third argument exists for `onPointInOut` that controls the number of
 ```lua
 local msBetweenPointCheck = 100
 pinkcage:onPointInOut(PolyZone.getPlayerPosition, function(isPointInside, point)
-	-- This function will now check every 100 ms whether the point has entered or exited the zone
+    -- This function will now check every 100 ms whether the point has entered or exited the zone
 end, msBetweenPointCheck)
 ```
 
@@ -133,15 +133,15 @@ Also, if the `PolyZone.getPlayerPosition` or `PolyZone.getPlayerHeadPosition` he
 ```lua
 local insidePinkCage = false
 pinkcage:onPointInOut(function()
-	return GetEntityCoords(GetVehiclePedIsIn(PlayerPedId(), false))
+    return GetEntityCoords(GetVehiclePedIsIn(PlayerPedId(), false))
 end, function(isPointInside, point)
-	insidePinkCage = isPointInside
+    insidePinkCage = isPointInside
 end)
 ```
 Here we pass in the following custom callback that returns the point to check:
 ```lua
 function()
-	return GetEntityCoords(GetVehiclePedIsIn(PlayerPedId(), false))
+    return GetEntityCoords(GetVehiclePedIsIn(PlayerPedId(), false))
 end
 ```
 This function will return the position of the vehicle the player is currently in. Note that this is just an example, and in reality, `PolyZone.getPlayerPosition` will do this anyways.
