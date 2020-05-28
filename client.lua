@@ -609,6 +609,23 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
   end)
 end
 
+function PolyZone:onEntityDamaged(onDamagedCb)
+  local entity = self.entity
+  if not entity then
+    print("[PolyZone] Error: Called onEntityDamage on non entity zone {name=" .. self.name .. "}")
+    return
+  end
+
+  AddEventHandler('gameEventTriggered', function (name, args)
+    if name == 'CEventNetworkEntityDamage' then
+      local victim, attacker, victimDied, weaponHash, isMelee = args[1], args[2], args[4], args[5], args[10]
+      --print(entity, victim, attacker, victimDied, weaponHash, isMelee)
+      if victim ~= entity then return end
+      onDamagedCb(victimDied == 1, attacker, weaponHash, isMelee == 1)
+    end
+  end)
+end
+
 function PolyZone:getBoundingBoxMin()
   return self.min
 end
