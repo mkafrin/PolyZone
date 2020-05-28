@@ -154,6 +154,18 @@ pinkcage:destroy()
 ```
 Note: If you try to call `isPointInside` on a destroyed zone, it will return false, and emit a warning.
 
+### onEntityDamaged Helper
+It may be useful to know when the entity associated with an entity zone is damaged or is destroyed/dies, and do something with that info. The `onEntityDamaged` helper can provide this information. `onEntityDamaged` takes a callback function that is run anytime the entity associated with an entity zone is damaged, and passes some additional information to the callback. It is used as follows:
+
+```lua
+entity_zone:onEntityDamaged(function(entityDied, attacker, weaponHash, isMelee)
+    -- Do stuff here!
+    -- You could destroy the zone when the entity is destroyed for example:
+    if entityDied then entity_zone:destroy() end
+end)
+```
+Note: This is event-based and therefore does not run per-frame or at any regular interval. It will trigger the moment any damage to the entity occurs. This helper can only be used on entity zones and will trigger an error if used on a non entity zone.
+
 ### Additional Helper Functions
 Lastly, there are a few additional helper functions that expose some internal variables, in case you might have a use for them. These functions are all based on the bounding box that surrounds the zone and are:
 
