@@ -7,6 +7,7 @@ version '1.2.5'
 
 client_scripts {
   'client.lua',
+  'EntityZone.lua',
   'commands.lua',
   'creation.lua'
 }

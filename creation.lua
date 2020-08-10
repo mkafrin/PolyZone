@@ -21,11 +21,9 @@ AddEventHandler("polyzone:polystart", function(name)
       walls = {0, 255, 0},
       outline = {255, 0, 0},
       grid = {255, 255, 255}
-    },
-    startPos = vector2(0.0, 0.0),
-    offsetPos = vector2(0.0, 0.0),
-    offsetRot = 0.0
+    }
   }
+  setmetatable(createdShape, { __index = PolyZone })
 
   drawShape = true
   drawThread()
