@@ -9,6 +9,7 @@ client_scripts {
   'client.lua',
   'BoxZone.lua',
   'EntityZone.lua',
+  'ComboZone.lua',
   'commands.lua',
   'creation.lua'
 }
