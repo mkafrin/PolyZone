@@ -1,7 +1,5 @@
 ComboZone = {}
 
-local min, max = math.min, math.max
-
 function ComboZone:draw()
   local zones = self.zones
   for i=1, #zones do
