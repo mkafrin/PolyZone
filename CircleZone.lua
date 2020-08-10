@@ -1,4 +1,6 @@
 CircleZone = {}
+-- Inherits from PolyZone
+setmetatable(CircleZone, { __index = PolyZone })
 
 function CircleZone:draw()
   local center = self.center
@@ -69,12 +71,4 @@ function CircleZone:isPointInside(point)
   else
     return #(point.xy - center) < radius
   end
-end
-
-function CircleZone:destroy()
-  PolyZone.destroy(self)
-end
-
-function CircleZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
-  PolyZone.onPointInOut(self, getPointCb, onPointInOutCb, waitInMS)
 end
