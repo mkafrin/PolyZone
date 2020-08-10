@@ -18,13 +18,7 @@ local function _initDebug(zone, options)
   
   Citizen.CreateThread(function()
     while not zone.destroyed do
-      local zones = zone.zones
-      for i=1, #zones do
-        local zoneToDraw = zones[i]
-        if zoneToDraw then
-          zoneToDraw:draw()
-        end
-      end
+      zone:draw()
       Citizen.Wait(0)
     end
   end)
