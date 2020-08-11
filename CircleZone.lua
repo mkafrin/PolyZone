@@ -34,8 +34,8 @@ function CircleZone:new(center, radius, options)
   local zone = {
     name = tostring(options.name) or nil,
     center = center,
-    radius = radius,
-    diameter = radius * 2,
+    radius = radius + 0.0,
+    diameter = radius * 2.0,
     useZ = options.useZ or false,
     debugPoly = options.debugPoly or false,
     debugColor = options.debugColor or {0, 255, 0}
