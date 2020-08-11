@@ -36,6 +36,21 @@ local function _calculateScaleAndOffset(options)
   return minOffset, maxOffset, minScale, maxScale
 end
 
+local function _calculatePoints(center, length, width, minScale, maxScale, minOffset, maxOffset)
+  local halfLength, halfWidth = length / 2, width / 2
+  local min = vector3(-halfWidth, -halfLength, 0.0)
+  local max = vector3(halfWidth, halfLength, 0.0)
+
+  min = min * minScale - minOffset
+  max = max * maxScale + maxOffset
+
+  -- Box vertices
+  local p1 = center.xy + vector2(min.x, min.y)
+  local p2 = center.xy + vector2(max.x, min.y)
+  local p3 = center.xy + vector2(max.x, max.y)
+  local p4 = center.xy + vector2(min.x, max.y)
+  return {p1, p2, p3, p4}
+end
 
 -- Debug drawing functions
 function BoxZone:TransformPoint(point)
@@ -59,31 +74,22 @@ local function _initDebug(zone, options)
 end
 
 function BoxZone:new(center, length, width, options)
-
-  local halfLength, halfWidth = length / 2, width / 2
-  local min = vector3(-halfWidth, -halfLength, 0.0)
-  local max = vector3(halfWidth, halfLength, 0.0)
-
-  local pos = center
   local minOffset, maxOffset, minScale, maxScale = _calculateScaleAndOffset(options)
   local scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
-  
-  min = min * minScale - minOffset
-  max = max * maxScale + maxOffset
 
-  -- Box vertices
-  local p1 = pos.xy + vector2(min.x, min.y)
-  local p2 = pos.xy + vector2(max.x, min.y)
-  local p3 = pos.xy + vector2(max.x, max.y)
-  local p4 = pos.xy + vector2(min.x, max.y)
-  local points = {p1, p2, p3, p4}
+  local points = _calculatePoints(center, length, width, minScale, maxScale, minOffset, maxOffset)
 
   -- Box Zones don't use the grid optimization because they are already rectangles/cubes
   options.useGrid = false
   local zone = PolyZone:new(points, options)
+  zone.center = center
+  zone.length = length
+  zone.width = width
   zone.startPos = center.xy
   zone.offsetPos = vector2(0.0, 0.0)
   zone.offsetRot = options.heading or 0.0
+  zone.minScale, zone.maxScale = minScale, maxScale
+  zone.minOffset, zone.maxOffset = minOffset, maxOffset
   zone.scaleZ, zone.offsetZ = scaleZ, offsetZ
 
   setmetatable(zone, self)
@@ -117,4 +123,36 @@ function BoxZone:isPointInside(point)
     return false
   end
   return true
+end
+
+function BoxZone:setHeading(heading)
+  if not heading then
+    return
+  end
+  self.offsetRot = heading
+end
+
+function BoxZone:setCenter(center)
+  if not center or center == self.center then
+    return
+  end
+  self.center = center
+  self.startPos = center.xy
+  self.points = _calculatePoints(self.center, self.length, self.width, self.minScale, self.maxScale, self.minOffset, self.maxOffset)
+end
+
+function BoxZone:setLength(length)
+  if not length or length == self.length then
+    return
+  end
+  self.length = length
+  self.points = _calculatePoints(self.center, self.length, self.width, self.minScale, self.maxScale, self.minOffset, self.maxOffset)
+end
+
+function BoxZone:setWidth(width)
+  if not width or width == self.width then
+    return
+  end
+  self.width = width
+  self.points = _calculatePoints(self.center, self.length, self.width, self.minScale, self.maxScale, self.minOffset, self.maxOffset)
 end
