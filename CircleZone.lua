@@ -43,9 +43,6 @@ function CircleZone:new(center, radius, options)
   if zone.useZ then
     assert(type(zone.center) == "vector3", "Center must be vector3 if useZ is true {center=" .. center .. "}")
   end
-  if not zone.useZ then
-    zone.center = zone.center.xy
-  end
   setmetatable(zone, self)
   self.__index = self
   return zone
@@ -69,6 +66,6 @@ function CircleZone:isPointInside(point)
   if self.useZ then
     return #(point - center) < radius
   else
-    return #(point.xy - center) < radius
+    return #(point.xy - center.xy) < radius
   end
 end
