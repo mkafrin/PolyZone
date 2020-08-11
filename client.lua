@@ -392,8 +392,12 @@ local function _initDebug(poly, options)
 end
 
 function PolyZone:new(points, options)
-  if not points or #points <= 2 then
+  if not points then
+    print("[PolyZone] Error: Passed nil points table to PolyZone:Create() {name=" .. options.name .. "}")
     return
+  end
+  if #points < 3 then
+    print("[PolyZone] Warning: Passed points table with less than 3 points to PolyZone:Create() {name=" .. options.name .. "}")
   end
 
   options = options or {}
