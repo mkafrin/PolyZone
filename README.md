@@ -1,5 +1,5 @@
 # PolyZone
-PolyZone is a FiveM mod to define polygonal zones and test whether a point is inside or outside of the zone
+PolyZone is a FiveM mod to define zones of different shapes and test whether a point is inside or outside of the zone
 
 ![PolyZone around the prison](https://i.imgur.com/InKNaoL.jpg)
 
