@@ -3,11 +3,11 @@ PolyZone is a FiveM mod to define polygonal zones and test whether a point is in
 
 ![PolyZone around the prison](https://i.imgur.com/InKNaoL.jpg)
 
-### Download
+## Download
 
 Click [here](https://github.com/mkafrin/PolyZone/releases) to go to the releases page and download the latest release
 
-### Using PolyZone in a Script
+## Using PolyZone in a Script
 
 In order to use PolyZone in your script, you must _at least_ include PolyZone's client.lua directly in your __resource.lua or fxmanifest.lua. You can do that by using FiveM's @ syntax for importing resource files:
 
@@ -31,18 +31,18 @@ client_scripts {
 }
 ```
 
-### Documentation
+## Documentation
 For additional information on how to use PolyZone, please take a look at the [wiki](https://github.com/mkafrin/PolyZone/wiki)
 
-### Troubleshooting and Support
+## Troubleshooting and Support
 For help troubleshooting issues you've encountered (that aren't in the FAQ), or to suggest new features, use the [issues page](https://github.com/mkafrin/PolyZone/issues)
 
-### FAQ - Frequently Asked Questions
+## FAQ - Frequently Asked Questions
 **I'm getting the error `attempt to index a nil value` when creating a zone, what's wrong?**
 > Did you include all the necessary scripts in your \_\_resource.lua or fxmanifest.lua? Remember some zones require other zones, like EntityZone.lua requires BoxZone.lua and BoxZone.lua requires client.lua.
 
 **I'm getting no errors, but I can't see my zone in the right place when I turn on debug drawing**
 > If you are using them, is minZ and maxZ set correctly? Or if you are using a CircleZone with useZ=true, is your center's Z value correct? If using a PolyZone, did you manually select all your points, or use the creation script? If you did it manually, the ordering of the points could be causing issues. Are you using the correct option to enable debug drawing? For PolyZones, you can use `debugPoly` and `debugGrid`, but for other zones, `debugPoly` is the only one that works.
 
-### License
+## License
 **Please see the LICENSE file. That file will always overrule anything mentioned in the README.md or wiki**
