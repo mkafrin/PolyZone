@@ -1,24 +1,7 @@
 PolyZone = {}
 
 -- Utility functions
-local rad, cos, sin, deg, abs, atan2 = math.rad, math.cos, math.sin, math.deg, math.abs, math.atan2
-local function rotate(origin, point, theta)
-  if theta == 0.0 then return point end
-
-  local p = point - origin
-  theta = rad(theta)
-  local cosTheta = cos(theta)
-  local sinTheta = sin(theta)
-  local x = p.x * cosTheta - p.y * sinTheta
-  local y = p.x * sinTheta + p.y * cosTheta
-  return vector2(x, y) + origin
-end
-
-local function GetRotation(entity)
-  local fwdVector = GetEntityForwardVector(entity)
-  return deg(atan2(fwdVector.y, fwdVector.x))
-end
-
+local abs = math.abs
 local function _isLeft(p0, p1, p2)
   local p0x = p0.x
   local p0y = p0.y
@@ -90,51 +73,9 @@ local function _calculatePolygonArea(points)
   return abs(0.5 * sum)
 end
 
-function _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
-  local min, max = dimensions[1], dimensions[2]
-  local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
-
-  -- Bottom vertices
-  local p1 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, minZ).z
-  local p2 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, minZ).z
-  local p3 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, minZ).z
-  local p4 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, minZ).z
-
-  -- Top vertices
-  local p5 = GetOffsetFromEntityInWorldCoords(entity, minX, minY, maxZ).z
-  local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
-  local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
-  local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
-  local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
-  minZ = minZ * scaleZ[1] - offsetZ[1]
-  local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
-  maxZ = maxZ * scaleZ[2] + offsetZ[2]
-  return pos.z - minZ, pos.z + maxZ
-end
-
-function _calculateScaleAndOffset(options)
-  -- Scale and offset tables are both formatted as {forward, back, left, right, up, down}
-  -- or if symmetrical {forward/back, left/right, up/down}
-  local scale = options.scale or {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
-  local offset = options.offset or {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-  assert(#scale == 3 or #scale == 6, "Scale must be of length 3 or 6")
-  assert(#offset == 3 or #offset == 6, "Offset must be of length 3 or 6")
-  if #scale == 3 then
-    scale = {scale[1], scale[1], scale[2], scale[2], scale[3], scale[3]}
-  end
-  if #offset == 3 then
-    offset = {offset[1], offset[1], offset[2], offset[2], offset[3], offset[3]}
-  end
-  local minOffset = vector3(offset[3], offset[2], offset[6])
-  local maxOffset = vector3(offset[4], offset[1], offset[5])
-  local minScale = vector3(scale[3], scale[2], scale[6])
-  local maxScale = vector3(scale[4], scale[1], scale[5])
-  return minOffset, maxOffset, minScale, maxScale
-end
-
 
 -- Debug drawing functions
-local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
+function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   local bottomLeft = vector3(p1.x, p1.y, minZ)
   local topLeft = vector3(p1.x, p1.y, maxZ)
   local bottomRight = vector3(p2.x, p2.y, minZ)
@@ -146,47 +87,44 @@ local function _drawWall(p1, p2, minZ, maxZ, r, g, b, a)
   DrawPoly(bottomRight,topLeft,bottomLeft,r,g,b,a)
 end
 
-local function _drawPoly(poly, isEntityZone)
+function PolyZone:TransformPoint(point)
+  -- No point transform necessary for regular PolyZones, unlike zones like Entity Zones, whose points can be rotated and offset
+  return point
+end
+
+function PolyZone:draw()
   local zDrawDist = 45.0
-  local oColor = poly.debugColors.outline
+  local oColor = self.debugColors.outline
   local oR, oG, oB = oColor[1], oColor[2], oColor[3]
-  local wColor = poly.debugColors.walls
+  local wColor = self.debugColors.walls
   local wR, wG, wB = wColor[1], wColor[2], wColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
-  local offsetPos = poly.offsetPos
-  local minZ = poly.minZ or plyPos.z - zDrawDist
-  local maxZ = poly.maxZ or plyPos.z + zDrawDist
-  local origin = poly.startPos
-  local theta = poly.offsetRot
+  local minZ = self.minZ or plyPos.z - zDrawDist
+  local maxZ = self.maxZ or plyPos.z + zDrawDist
   
-  local points = poly.points
+  local points = self.points
   for i=1, #points do
-    local point = points[i]
-    if isEntityZone then point = rotate(origin, point, theta) + offsetPos end
+    local point = self:TransformPoint(points[i])
     DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
 
     if i < #points then
-      local p2 = points[i+1]
-      if isEntityZone then p2 = rotate(origin, p2, theta) + offsetPos end
+      local p2 = self:TransformPoint(points[i+1])
       DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
       _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
     end
   end
 
   if #points > 2 then
-    local firstPoint = points[1]
-    if isEntityZone then firstPoint = rotate(origin, firstPoint, theta) + offsetPos end
-    local lastPoint = points[#points]
-    if isEntityZone then lastPoint = rotate(origin, lastPoint, theta) + offsetPos end
+    local firstPoint = self:TransformPoint(points[1])
+    local lastPoint = self:TransformPoint(points[#points])
     DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
     _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
   end
 end
 
-
 function PolyZone.drawPoly(poly)
-  _drawPoly(poly, false)
+  PolyZone.draw(poly)
 end
 
 -- Debug drawing all grid cells that are completly within the polygon
@@ -436,19 +374,16 @@ local function _calculatePoly(poly, options)
 end
 
 
-function _initDebug(poly, options)
+local function _initDebug(poly, options)
   local debugEnabled = options.debugPoly or options.debugGrid
   if not debugEnabled then
     return
   end
   
   Citizen.CreateThread(function()
-    local entity = poly.entity
-    local isEntityZone = entity ~= nil
     while not poly.destroyed do
-      if isEntityZone then UpdateOffsets(entity, poly) end
-      _drawPoly(poly, isEntityZone)
-      if not isEntityZone and options.debugGrid and poly.lines then
+      poly:draw()
+      if options.debugGrid and poly.lines then
         _drawGrid(poly)
       end
       Citizen.Wait(0)
@@ -456,10 +391,13 @@ function _initDebug(poly, options)
   end)
 end
 
-
-function PolyZone:Create(points, options)
-  if not points or #points <= 2 then
+function PolyZone:new(points, options)
+  if not points then
+    print("[PolyZone] Error: Passed nil points table to PolyZone:Create() {name=" .. options.name .. "}")
     return
+  end
+  if #points < 3 then
+    print("[PolyZone] Warning: Passed points table with less than 3 points to PolyZone:Create() {name=" .. options.name .. "}")
   end
 
   options = options or {}
@@ -484,89 +422,23 @@ function PolyZone:Create(points, options)
     },
     debugPoly = options.debugPoly or false,
     debugGrid = options.debugGrid or false,
-    startPos = vector2(0.0, 0.0),
-    offsetPos = vector2(0.0, 0.0),
-    offsetRot = 0.0
   }
   _calculatePoly(poly, options)
-  _initDebug(poly, options)
   setmetatable(poly, self)
   self.__index = self
   return poly
 end
 
-function PolyZone:CreateAroundEntity(entity, options)
-  assert(DoesEntityExist(entity), "Entity does not exist")
-
-  local min, max = GetModelDimensions(GetEntityModel(entity))
-  local dimensions = {min, max}
-  local minLength = math.min(min.x, min.y, min.z)
-  local maxLength = math.max(max.x, max.y, max.z)
-  
-
-  local pos = GetEntityCoords(entity)
-  local minOffset, maxOffset, minScale, maxScale = _calculateScaleAndOffset(options)
-  local scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
-  
-  min = min * minScale - minOffset
-  max = max * maxScale + maxOffset
-
-  -- Bottom vertices
-  local p1 = pos.xy + vector2(min.x, min.y)
-  local p2 = pos.xy + vector2(max.x, min.y)
-  local p3 = pos.xy + vector2(max.x, max.y)
-  local p4 = pos.xy + vector2(min.x, max.y)
-  local points = {p1, p2, p3, p4}
-
-  if options.useZ == true then
-    options.minZ, options.maxZ = _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
-  else
-    options.minZ = nil
-    options.maxZ = nil
-  end
-
-  options.useGrid = false
-  local poly = PolyZone:Create(points, options)
-  poly.startPos = GetEntityCoords(entity).xy
-  poly.entity = entity
-  poly.dimensions = dimensions
-  poly.useZ = options.useZ
-  poly.scaleZ, poly.offsetZ = scaleZ, offsetZ
+function PolyZone:Create(points, options)
+  local poly = PolyZone:new(points, options)
+  _initDebug(poly, options)
   return poly
-end
-
-function UpdateOffsets(entity, poly)
-  local pos = GetEntityCoords(entity)
-  local rot = GetRotation(entity)
-  poly.offsetPos = pos.xy - poly.startPos
-  poly.offsetRot = rot - 90.0
-
-  if poly.useZ then
-    poly.minZ, poly.maxZ = _calculateMinAndMaxZ(entity, poly.dimensions, poly.scaleZ, poly.offsetZ, pos)
-  end
 end
 
 function PolyZone:isPointInside(point)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
     return false 
-  end
-
-  local entity = self.entity
-  if entity then
-    UpdateOffsets(entity, self)
-    local rotatedPoint = rotate(self.startPos, point.xy - self.offsetPos, -self.offsetRot)
-    local pX, pY, pZ = rotatedPoint.x, rotatedPoint.y, point.z
-    local min, max = self.min, self.max
-    local minX, minY, maxX, maxY = min.x, min.y, max.x, max.y
-    local minZ, maxZ = self.minZ, self.maxZ
-    if pX < minX or pX > maxX or pY < minY or pY > maxY then
-      return false
-    end
-    if (minZ and pZ < minZ) or (maxZ and pZ > maxZ) then
-      return false
-    end
-    return true
   end
 
   return _pointInPoly(point, self)
@@ -579,13 +451,12 @@ function PolyZone:destroy()
   end
 end
 
-
 -- Helper functions
 function PolyZone.getPlayerPosition()
   return GetEntityCoords(PlayerPedId())
 end
 
-local HeadBone = 0x796e;
+HeadBone = 0x796e;
 function PolyZone.getPlayerHeadPosition()
   return GetPedBoneCoords(PlayerPedId(), HeadBone);
 end
@@ -609,21 +480,8 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
   end)
 end
 
-function PolyZone:onEntityDamaged(onDamagedCb)
-  local entity = self.entity
-  if not entity then
-    print("[PolyZone] Error: Called onEntityDamage on non entity zone {name=" .. self.name .. "}")
-    return
-  end
-
-  AddEventHandler('gameEventTriggered', function (name, args)
-    if name == 'CEventNetworkEntityDamage' then
-      local victim, attacker, victimDied, weaponHash, isMelee = args[1], args[2], args[4], args[5], args[10]
-      --print(entity, victim, attacker, victimDied, weaponHash, isMelee)
-      if victim ~= entity then return end
-      onDamagedCb(victimDied == 1, attacker, weaponHash, isMelee == 1)
-    end
-  end)
+function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
+  self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
 end
 
 function PolyZone:getBoundingBoxMin()

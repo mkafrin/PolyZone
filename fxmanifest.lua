@@ -6,9 +6,13 @@ description 'Define polygonal zones and test whether a point is inside or outsid
 version '1.2.5'
 
 client_scripts {
+  'utils.lua',
   'client.lua',
-  'commands.lua',
-  'creation.lua'
+  'BoxZone.lua',
+  'EntityZone.lua',
+  'CircleZone.lua',
+  'ComboZone.lua',
+  'creation/*.lua'
 }
 
 server_scripts {
