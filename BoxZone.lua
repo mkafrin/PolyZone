@@ -8,11 +8,12 @@ function PolyZone.rotate(origin, point, theta)
   if theta == 0.0 then return point end
 
   local p = point - origin
+  local pX, pY = p.x, p.y
   theta = rad(theta)
   local cosTheta = cos(theta)
   local sinTheta = sin(theta)
-  local x = p.x * cosTheta - p.y * sinTheta
-  local y = p.x * sinTheta + p.y * cosTheta
+  local x = pX * cosTheta - pY * sinTheta
+  local y = pX * sinTheta + pY * cosTheta
   return vector2(x, y) + origin
 end
 
@@ -85,6 +86,7 @@ function BoxZone:new(center, length, width, options)
   zone.center = center
   zone.length = length
   zone.width = width
+  zone.boundingRadius = math.sqrt(length * length + width * width) / 2
   zone.startPos = center.xy
   zone.offsetPos = vector2(0.0, 0.0)
   zone.offsetRot = options.heading or 0.0
@@ -111,7 +113,13 @@ function BoxZone:isPointInside(point)
     return false 
   end
 
-  local rotatedPoint = PolyZone.rotate(self.startPos, point.xy - self.offsetPos, -self.offsetRot)
+  local startPos = self.startPos
+  local actualPos = point.xy - self.offsetPos
+  if #(actualPos - startPos) > self.boundingRadius then
+    return false
+  end
+
+  local rotatedPoint = PolyZone.rotate(startPos, actualPos, -self.offsetRot)
   local pX, pY, pZ = rotatedPoint.x, rotatedPoint.y, point.z
   local min, max = self.min, self.max
   local minX, minY, maxX, maxY = min.x, min.y, max.x, max.y
