@@ -29,23 +29,8 @@ local function handleInput(heading, length, width, center)
     return (heading + 5) % 360, length, width, center
   end
 
-  DisableControlAction(0, 27, true)
-  if IsDisabledControlPressed(0, 27) then -- arrow up
-    local newCenter =  PolyZone.rotate(center.xy, vector2(center.x, center.y + 0.05), heading)
-    return heading, length, width, vector3(newCenter.x, newCenter.y, center.z)
-  end
-  if IsControlPressed(0, 173) then -- arrow down
-    local newCenter =  PolyZone.rotate(center.xy, vector2(center.x, center.y - 0.05), heading)
-    return heading, length, width, vector3(newCenter.x, newCenter.y, center.z)
-  end
-  if IsControlPressed(0, 174) then -- arrow left
-    local newCenter =  PolyZone.rotate(center.xy, vector2(center.x - 0.05, center.y), heading)
-    return heading, length, width, vector3(newCenter.x, newCenter.y, center.z)
-  end
-  if IsControlPressed(0, 175) then -- arrow right
-    local newCenter =  PolyZone.rotate(center.xy, vector2(center.x + 0.05, center.y), heading)
-    return heading, length, width, vector3(newCenter.x, newCenter.y, center.z)
-  end
+  local rot = GetGameplayCamRot(2)
+  center = handleArrowInput(center, rot.z)
 
   return heading, length, width, center
 end

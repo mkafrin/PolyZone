@@ -103,7 +103,7 @@ AddEventHandler("polyzone:pzlast", function()
   if createdZoneType == 'box' then
     boxStart(lastCreatedZone.name, lastCreatedZone.offsetRot, lastCreatedZone.length, lastCreatedZone.width)
   elseif createdZoneType == 'circle' then
-    circleStart(lastCreatedZone.name, lastCreatedZone.radius)
+    circleStart(lastCreatedZone.name, lastCreatedZone.radius, lastCreatedZone.useZ)
   end
   drawZone = true
   drawThread()

@@ -71,9 +71,16 @@ function CircleZone:isPointInside(point)
 end
 
 function CircleZone:setRadius(radius)
-  if not radius then
+  if not radius or radius == self.radius then
     return
   end
   self.radius = radius
   self.diameter = radius * 2.0
+end
+
+function CircleZone:setCenter(center)
+  if not center or center == self.center then
+    return
+  end
+  self.center = center
 end
