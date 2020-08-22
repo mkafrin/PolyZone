@@ -96,3 +96,7 @@ function ComboZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS, exhaustive
     end
   end)
 end
+
+function ComboZone:onPlayerInOut(onPointInOutCb, waitInMS, exhaustive)
+  self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS, exhaustive)
+end

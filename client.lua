@@ -480,6 +480,10 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
   end)
 end
 
+function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
+  self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
+end
+
 function PolyZone:getBoundingBoxMin()
   return self.min
 end
