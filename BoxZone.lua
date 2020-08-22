@@ -133,6 +133,10 @@ function BoxZone:isPointInside(point)
   return true
 end
 
+function BoxZone:getHeading()
+  return self.offsetRot
+end
+
 function BoxZone:setHeading(heading)
   if not heading then
     return
@@ -149,12 +153,20 @@ function BoxZone:setCenter(center)
   self.points = _calculatePoints(self.center, self.length, self.width, self.minScale, self.maxScale, self.minOffset, self.maxOffset)
 end
 
+function BoxZone:getLength()
+  return self.length
+end
+
 function BoxZone:setLength(length)
   if not length or length == self.length then
     return
   end
   self.length = length
   self.points = _calculatePoints(self.center, self.length, self.width, self.minScale, self.maxScale, self.minOffset, self.maxOffset)
+end
+
+function BoxZone:getWidth()
+  return self.width
 end
 
 function BoxZone:setWidth(width)
