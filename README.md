@@ -35,7 +35,7 @@ client_scripts {
 For additional information on how to use PolyZone, please take a look at the [wiki](https://github.com/mkafrin/PolyZone/wiki)
 
 ## Troubleshooting and Support
-For help troubleshooting issues you've encountered (that aren't in the FAQ), or to suggest new features, use the [issues page](https://github.com/mkafrin/PolyZone/issues)
+For help troubleshooting issues you've encountered (that aren't in the FAQ), or to suggest new features, use the [issues page](https://github.com/mkafrin/PolyZone/issues). Just a reminder though, I do this in my free time and so there is no guarantee an issue will be fixed or a feature will be added. In lieu of my limited time, I will prioritize issues and bugs over features. 
 
 ## FAQ - Frequently Asked Questions
 **I'm getting the error `attempt to index a nil value` when creating a zone, what's wrong?**
