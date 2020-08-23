@@ -30,7 +30,7 @@ end
 
 RegisterNetEvent("polyzone:pzadd")
 AddEventHandler("polyzone:pzadd", function()
-  if createdZone == nil then
+  if createdZone == nil or createdZoneType ~= 'poly' then
     return
   end
 
@@ -49,7 +49,7 @@ end)
 
 RegisterNetEvent("polyzone:pzundo")
 AddEventHandler("polyzone:pzundo", function()
-  if createdZone == nil then
+  if createdZone == nil or createdZoneType ~= 'poly' then
     return
   end
 
