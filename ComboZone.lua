@@ -84,13 +84,15 @@ function ComboZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS, exhaustive
     local isInside = nil
     local insideZonesCount = 0
     while not self.destroyed do
-      local point = getPointCb()
-      local newIsInside, insideZones = self:isPointInside(point, exhaustive)
-      local newInsideZonesCount = #insideZones
-      if newIsInside ~= isInside or newInsideZonesCount ~= insideZonesCount then
-        onPointInOutCb(newIsInside, point, insideZones)
-        isInside = newIsInside
-        insideZonesCount = newInsideZonesCount
+      if not self.paused then
+        local point = getPointCb()
+        local newIsInside, insideZones = self:isPointInside(point, exhaustive)
+        local newInsideZonesCount = #insideZones
+        if newIsInside ~= isInside or newInsideZonesCount ~= insideZonesCount then
+          onPointInOutCb(newIsInside, point, insideZones)
+          isInside = newIsInside
+          insideZonesCount = newInsideZonesCount
+        end
       end
       Citizen.Wait(_waitInMS)
     end
@@ -99,4 +101,12 @@ end
 
 function ComboZone:onPlayerInOut(onPointInOutCb, waitInMS, exhaustive)
   self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS, exhaustive)
+end
+
+function ComboZone:setPaused(paused)
+  self.paused = paused
+end
+
+function ComboZone:isPaused()
+  return self.paused
 end

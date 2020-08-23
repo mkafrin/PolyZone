@@ -469,11 +469,13 @@ function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
   Citizen.CreateThread(function()
     local isInside = nil
     while not self.destroyed do
-      local point = getPointCb()
-      local newIsInside = self:isPointInside(point)
-      if newIsInside ~= isInside then
-        onPointInOutCb(newIsInside, point)
-        isInside = newIsInside
+      if not self.paused then
+        local point = getPointCb()
+        local newIsInside = self:isPointInside(point)
+        if newIsInside ~= isInside then
+          onPointInOutCb(newIsInside, point)
+          isInside = newIsInside
+        end
       end
       Citizen.Wait(_waitInMS)
     end
@@ -482,6 +484,14 @@ end
 
 function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
   self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
+end
+
+function PolyZone:setPaused(paused)
+  self.paused = paused
+end
+
+function PolyZone:isPaused()
+  return self.paused
 end
 
 function PolyZone:getBoundingBoxMin()

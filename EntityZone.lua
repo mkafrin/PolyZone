@@ -111,7 +111,7 @@ function EntityZone:onEntityDamaged(onDamagedCb)
   end
 
   self.damageEventHandlers[#self.damageEventHandlers + 1] = AddEventHandler('gameEventTriggered', function (name, args)
-    if self.destroyed then
+    if self.destroyed or self.paused then
       return
     end
 
