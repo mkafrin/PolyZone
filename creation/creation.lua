@@ -99,11 +99,17 @@ AddEventHandler("polyzone:pzlast", function()
   
   end
 
+  local name = GetUserInput("Enter name (or leave empty to reuse last zone's name):")
+  if name == nil then
+    return
+  elseif name == "" then
+    name = lastCreatedZone.name
+  end
   createdZoneType = lastCreatedZoneType
   if createdZoneType == 'box' then
-    boxStart(lastCreatedZone.name, lastCreatedZone.offsetRot, lastCreatedZone.length, lastCreatedZone.width)
+    boxStart(name, lastCreatedZone.offsetRot, lastCreatedZone.length, lastCreatedZone.width)
   elseif createdZoneType == 'circle' then
-    circleStart(lastCreatedZone.name, lastCreatedZone.radius, lastCreatedZone.useZ)
+    circleStart(name, lastCreatedZone.radius, lastCreatedZone.useZ)
   end
   drawZone = true
   drawThread()
