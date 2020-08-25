@@ -38,7 +38,8 @@ function CircleZone:new(center, radius, options)
     diameter = radius * 2.0,
     useZ = options.useZ or false,
     debugPoly = options.debugPoly or false,
-    debugColor = options.debugColor or {0, 255, 0}
+    debugColor = options.debugColor or {0, 255, 0},
+    data = options.data or {},
   }
   if zone.useZ then
     assert(type(zone.center) == "vector3", "Center must be vector3 if useZ is true {center=" .. center .. "}")

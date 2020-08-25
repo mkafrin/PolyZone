@@ -30,6 +30,7 @@ function ComboZone:new(zones, options)
     name = tostring(options.name) or nil,
     zones = zones,
     debugPoly = options.debugPoly or false,
+    data = options.data or {}
   }
   setmetatable(zone, self)
   self.__index = self

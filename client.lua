@@ -422,6 +422,7 @@ function PolyZone:new(points, options)
     },
     debugPoly = options.debugPoly or false,
     debugGrid = options.debugGrid or false,
+    data = options.data or {}
   }
   _calculatePoly(poly, options)
   setmetatable(poly, self)
