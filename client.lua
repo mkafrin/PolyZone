@@ -368,8 +368,6 @@ local function _calculatePoly(poly, options)
     poly.gridCellWidth = poly.size.x / poly.gridDivisions
     poly.gridCellHeight = poly.size.y / poly.gridDivisions
     _createGrid(poly, options)
-  else
-    collectgarbage("collect")
   end
 end
 
