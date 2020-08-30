@@ -1,3 +1,7 @@
+local defaultColorWalls = {0, 255, 0}
+local defaultColorOutline = {255, 0, 0}
+local defaultColorGrid = {255, 255, 255}
+
 PolyZone = {}
 
 -- Utility functions
@@ -94,9 +98,9 @@ end
 
 function PolyZone:draw()
   local zDrawDist = 45.0
-  local oColor = self.debugColors.outline
+  local oColor = self.debugColors.outline or defaultColorOutline
   local oR, oG, oB = oColor[1], oColor[2], oColor[3]
-  local wColor = self.debugColors.walls
+  local wColor = self.debugColors.walls or defaultColorWalls
   local wR, wG, wB = wColor[1], wColor[2], wColor[3]
   local plyPed = PlayerPedId()
   local plyPos = GetEntityCoords(plyPed)
@@ -139,7 +143,7 @@ local function _drawGrid(poly)
   end
 
   local lines = poly.lines
-  local color = poly.debugColors.grid
+  local color = poly.debugColors.grid or defaultColorGrid
   local r, g, b = color[1], color[2], color[3]
   for i=1, #lines do
     local line = lines[i]
@@ -399,7 +403,6 @@ function PolyZone:new(points, options)
   end
 
   options = options or {}
-  local colors = options.debugColors or {}
   local useGrid = options.useGrid
   if useGrid == nil then useGrid = true end
   local poly = {
@@ -413,11 +416,7 @@ function PolyZone:new(points, options)
     maxZ = tonumber(options.maxZ) or nil,
     useGrid = useGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
-    debugColors = {
-      walls = colors.walls or {0, 255, 0},
-      outline = colors.outline or {255, 0, 0},
-      grid = colors.grid or {255, 255, 255}
-    },
+    debugColors = options.debugColors or {},
     debugPoly = options.debugPoly or false,
     debugGrid = options.debugGrid or false,
     data = options.data or {}
