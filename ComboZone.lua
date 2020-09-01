@@ -127,6 +127,14 @@ function ComboZone:getZones(point)
   return grid[gridY][gridX]
 end
 
+function ComboZone:AddZone(zone)
+  local zones = self.zones
+  local newIndex = #zones+1
+  zone.id = newIndex
+  zones[newIndex] = zone
+  self.grid = {}
+end
+
 function ComboZone:isPointInside(point)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
