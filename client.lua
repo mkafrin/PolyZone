@@ -360,6 +360,7 @@ local function _calculatePoly(poly, options)
   poly.max = vector2(maxX, maxY)
   poly.min = vector2(minX, minY)
   poly.size = poly.max - poly.min
+  poly.boundingRadius = math.sqrt(poly.size.y * poly.size.y + poly.size.x * poly.size.x) / 2
   poly.center = (poly.max + poly.min) / 2
   poly.area = _calculatePolygonArea(poly.points)
   if poly.useGrid then

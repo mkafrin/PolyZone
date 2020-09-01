@@ -86,7 +86,6 @@ function BoxZone:new(center, length, width, options)
   zone.center = center
   zone.length = length
   zone.width = width
-  zone.boundingRadius = math.sqrt(length * length + width * width) / 2
   zone.startPos = center.xy
   zone.offsetPos = vector2(0.0, 0.0)
   zone.offsetRot = options.heading or 0.0
