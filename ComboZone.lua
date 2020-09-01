@@ -1,3 +1,9 @@
+local mapMinX, mapMinY, mapMaxX, mapMaxY = -3700, -4400, 4500, 8000
+local xDivisions = 17
+local yDivisions = 25
+local xDelta = (mapMaxX - mapMinX) / xDivisions
+local yDelta = (mapMaxY - mapMinY) / yDivisions
+
 ComboZone = {}
 
 local function _areInsideZonesTablesEqual(tblA, tblB)
@@ -13,6 +19,46 @@ local function _areInsideZonesTablesEqual(tblA, tblB)
   end
   return true
 end
+
+local function _circleRectCollide(circleX, circleY, radius, rectX, rectY, rectWidth, rectLength)
+  -- temporary variables to set edges for testing
+  local testX = circleX
+  local testY = circleY
+
+  -- which edge is closest?
+  if circleX < rectX then testX = rectX      					                    -- test left edge
+  elseif circleX > rectX + rectWidth then testX = rectX + rectWidth end   -- right edge
+  if circleY < rectY then testY = rectY     		                          -- top edge
+  elseif circleY > rectY + rectLength then testY = rectY + rectLength end -- bottom edge
+
+  -- get distance from closest edges
+  local distX = circleX - testX
+  local distY = circleY - testY
+
+	return distX * distX + distY * distY <= radius * radius
+end
+
+local function _zonesInGridCell(x, y, zones)
+  local zonesInCell = {}
+  local startX = mapMinX + xDelta * x
+  local startY = mapMinY + yDelta * y
+  for _, zone in ipairs(zones) do
+    -- For each zone, append to zonesInCell IF it is inside the grid cell at x,y
+    local zoneCenter = zone.center
+    local radius = zone.radius or zone.boundingRadius
+    if _circleRectCollide(zoneCenter.x, zoneCenter.y, radius, startX, startY, xDelta, yDelta) then
+      zonesInCell[#zonesInCell+1] = zone
+    end
+  end
+  return zonesInCell
+end
+
+local function _getGridCell(pos)
+  local x = (pos.x - mapMinX) // xDelta
+  local y = (pos.y - mapMinY) // yDelta
+  return x, y
+end
+
 
 function ComboZone:draw()
   local zones = self.zones
@@ -50,6 +96,7 @@ function ComboZone:new(zones, options)
   local zone = {
     name = tostring(options.name) or nil,
     zones = zones,
+    grid = {},
     debugPoly = options.debugPoly or false,
     data = options.data or {}
   }
@@ -64,13 +111,31 @@ function ComboZone:Create(zones, options)
   return zone
 end
 
+function ComboZone:getZones(point)
+  --return self.zones
+  local grid = self.grid
+  local gridX, gridY = _getGridCell(point)
+  local row = grid[gridY]
+  if row == nil then
+    row = {}
+  end
+  if row[gridX] == nil then
+    local zonesInCell = _zonesInGridCell(gridX, gridY, self.zones)
+    row[gridX] = zonesInCell
+    grid[gridY] = row
+  end
+  return grid[gridY][gridX]
+end
+
 function ComboZone:isPointInside(point)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
     return false, {}
   end
 
-  local zones = self.zones
+  local zones = self:getZones(point)
+  if #zones == 0 then return false end
+
   for i=1, #zones do
     local zone = zones[i]
     if zone and zone:isPointInside(point) then
@@ -86,8 +151,9 @@ function ComboZone:isPointInsideExhaustive(point)
     return false, {}
   end
 
+  local zones = self:getZones(point)
+  if #zones == 0 then return false end
   local insideZones = {}
-  local zones = self.zones
   for i=1, #zones do
     local zone = zones[i]
     if zone and zone:isPointInside(point) then
