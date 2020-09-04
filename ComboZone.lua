@@ -93,9 +93,15 @@ function ComboZone:new(zones, options)
       zone.id = i
     end
   end
+
+  local useGrid = options.useGrid
+  if useGrid == nil and #zones >= 25 then
+    useGrid = true
+  end
   local zone = {
     name = tostring(options.name) or nil,
     zones = zones,
+    useGrid = useGrid,
     grid = {},
     debugPoly = options.debugPoly or false,
     data = options.data or {}
@@ -112,7 +118,10 @@ function ComboZone:Create(zones, options)
 end
 
 function ComboZone:getZones(point)
-  --return self.zones
+  if not self.useGrid then
+    return self.zones
+  end
+  
   local grid = self.grid
   local gridX, gridY = _getGridCell(point)
   local row = grid[gridY]
@@ -133,6 +142,9 @@ function ComboZone:AddZone(zone)
   zone.id = newIndex
   zones[newIndex] = zone
   self.grid = {}
+  if self.useGrid == nil and newIndex >= 25 then
+    self.useGrid = true
+  end
 end
 
 function ComboZone:isPointInside(point)
