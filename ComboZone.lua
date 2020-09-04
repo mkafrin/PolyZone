@@ -1,6 +1,6 @@
 local mapMinX, mapMinY, mapMaxX, mapMaxY = -3700, -4400, 4500, 8000
-local xDivisions = 17
-local yDivisions = 25
+local xDivisions = 34
+local yDivisions = 50
 local xDelta = (mapMaxX - mapMinX) / xDivisions
 local yDelta = (mapMaxY - mapMinY) / yDivisions
 
@@ -35,7 +35,18 @@ local function _circleRectCollide(circleX, circleY, radius, rectX, rectY, rectWi
   local distX = circleX - testX
   local distY = circleY - testY
 
-	return distX * distX + distY * distY <= radius * radius
+	return distX * distX + distY * distY < radius * radius
+end
+
+local function _addZoneToRows(rows, zone)
+  local radius = zone.radius or zone.boundingRadius
+  local minY = (zone.center.y - radius - mapMinY) // yDelta
+  local maxY = (zone.center.y + radius - mapMinY) // yDelta
+  for i=minY, maxY do
+    local row = rows[i] or {}
+    row[#row+1] = zone
+    rows[i] = row
+  end
 end
 
 local function _zonesInGridCell(x, y, zones)
@@ -86,12 +97,14 @@ end
 
 function ComboZone:new(zones, options)
   options = options or {}
-  -- Add a unique id for each zone in the ComboZone
+  local rows = {}
+  -- Add a unique id for each zone in the ComboZone and add to rows cache
   for i=1, #zones do
     local zone = zones[i]
     if zone then
       zone.id = i
     end
+    _addZoneToRows(rows, zone)
   end
 
   local useGrid = options.useGrid
@@ -102,6 +115,7 @@ function ComboZone:new(zones, options)
     name = tostring(options.name) or nil,
     zones = zones,
     useGrid = useGrid,
+    rows = rows,
     grid = {},
     debugPoly = options.debugPoly or false,
     data = options.data or {}
@@ -129,7 +143,7 @@ function ComboZone:getZones(point)
     row = {}
   end
   if row[gridX] == nil then
-    local zonesInCell = _zonesInGridCell(gridX, gridY, self.zones)
+    local zonesInCell = _zonesInGridCell(gridX, gridY, self.rows[gridY])
     row[gridX] = zonesInCell
     grid[gridY] = row
   end
@@ -142,6 +156,7 @@ function ComboZone:AddZone(zone)
   zone.id = newIndex
   zones[newIndex] = zone
   self.grid = {}
+  _addZoneToRows(self.rows, zone)
   if self.useGrid == nil and newIndex >= 25 then
     self.useGrid = true
   end
