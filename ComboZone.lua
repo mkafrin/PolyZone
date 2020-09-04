@@ -6,18 +6,44 @@ local yDelta = (mapMaxY - mapMinY) / yDivisions
 
 ComboZone = {}
 
-local function _areInsideZonesTablesEqual(tblA, tblB)
-  if tblA == nil or tblB == nil or #tblA ~= #tblB then
-    return false
-  end
-  for i=1, #tblA do
-    local a = tblA[i]
-    local b = tblB[i]
-    if a ~= nil and b ~= nil and a.id ~= b.id then
-      return false
+-- Finds all values in tblA that are not in tblB, using the "id" property
+local function tblDifference(tblA, tblB)
+  local diff
+  for _, a in ipairs(tblA) do
+    local found = false
+    for _, b in ipairs(tblB) do
+      if b.id == a.id then
+        found = true
+        break
+      end
+    end
+    if not found then
+      diff = diff or {}
+      diff[#diff+1] = a
     end
   end
-  return true
+  return diff
+end
+
+local function _differenceBetweenInsideZones(insideZones, newInsideZones)
+  if insideZones == nil and newInsideZones == nil then
+    -- No zones to check
+    return false, nil, nil
+  elseif insideZones == nil and newInsideZones ~= nil then
+    -- Was in no zones last check, but in 1 or more zones now (just entered all zones in newInsideZones)
+    return true, newInsideZones, nil
+  elseif insideZones ~= nil and newInsideZones == nil then
+    -- Was in 1 or more zones last check, but in no zones now (just left all zones in insideZones)
+    return true, nil, insideZones
+  end
+
+  -- Check for zones that were in insideZones, but are not in newInsideZones (zones the player just left)
+  local leftZones = tblDifference(insideZones, newInsideZones)
+  -- Check for zones that are in newInsideZones, but were not in insideZones (zones the player just entered)
+  local enteredZones = tblDifference(newInsideZones, insideZones)
+
+  local isDifferent = enteredZones ~= nil or leftZones ~= nil
+  return isDifferent, enteredZones, leftZones
 end
 
 local function _circleRectCollide(circleX, circleY, radius, rectX, rectY, rectWidth, rectLength)
@@ -143,7 +169,7 @@ function ComboZone:getZones(point)
     row = {}
   end
   if row[gridX] == nil then
-    local zonesInCell = _zonesInGridCell(gridX, gridY, self.rows[gridY])
+    local zonesInCell = _zonesInGridCell(gridX, gridY, self.rows[gridY] or {})
     row[gridX] = zonesInCell
     grid[gridY] = row
   end
@@ -188,14 +214,15 @@ function ComboZone:isPointInsideExhaustive(point)
 
   local zones = self:getZones(point)
   if #zones == 0 then return false end
-  local insideZones = {}
+  local insideZones
   for i=1, #zones do
     local zone = zones[i]
     if zone and zone:isPointInside(point) then
+      insideZones = insideZones or {}
       insideZones[#insideZones+1] = zone
     end
   end
-  return #insideZones ~= 0, insideZones
+  return insideZones ~= nil, insideZones
 end
 
 function ComboZone:destroy()
@@ -239,13 +266,14 @@ function ComboZone:onPointInOutExhaustive(getPointCb, onPointInOutCb, waitInMS)
 
   Citizen.CreateThread(function()
     local isInside = nil
-    local insideZones = {}
+    local insideZones = nil
     while not self.destroyed do
       if not self.paused then
         local point = getPointCb()
         local newIsInside, newInsideZones = self:isPointInsideExhaustive(point)
-        if newIsInside ~= isInside or not _areInsideZonesTablesEqual(insideZones, newInsideZones)  then
-          onPointInOutCb(newIsInside, point, newInsideZones)
+        local isDifferent, enteredZones, leftZones = _differenceBetweenInsideZones(insideZones, newInsideZones)
+        if newIsInside ~= isInside or isDifferent then
+          onPointInOutCb(newIsInside, point, newInsideZones, enteredZones, leftZones)
           isInside = newIsInside
           insideZones = newInsideZones
         end
