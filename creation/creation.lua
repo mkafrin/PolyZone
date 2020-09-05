@@ -107,7 +107,14 @@ AddEventHandler("polyzone:pzlast", function()
   end
   createdZoneType = lastCreatedZoneType
   if createdZoneType == 'box' then
-    boxStart(name, lastCreatedZone.offsetRot, lastCreatedZone.length, lastCreatedZone.width)
+    local minHeight, maxHeight
+    if lastCreatedZone.minZ then
+      minHeight = lastCreatedZone.center.z - lastCreatedZone.minZ
+    end
+    if lastCreatedZone.maxZ then
+      maxHeight = lastCreatedZone.maxZ - lastCreatedZone.center.z
+    end
+    boxStart(name, lastCreatedZone.offsetRot, lastCreatedZone.length, lastCreatedZone.width, minHeight, maxHeight)
   elseif createdZoneType == 'circle' then
     circleStart(name, lastCreatedZone.radius, lastCreatedZone.useZ)
   end
