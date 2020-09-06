@@ -71,9 +71,15 @@ end
 function boxStart(name, heading, length, width, minHeight, maxHeight)
   local center = GetEntityCoords(PlayerPedId())
   createdZone = BoxZone:Create(center, length, width, {name = tostring(name)})
-  local useZ = minHeight ~= nil and maxHeight ~= nil
-  local minZ = minHeight ~= nil and center.z - minHeight or center.z - 1.0
-  local maxZ = maxHeight ~= nil and center.z + maxHeight or center.z + 3.0
+  local useZ, minZ, maxZ = false, center.z - 1.0, center.z + 3.0
+  if minHeight then
+    minZ = center.z - minHeight
+    createdZone.minZ = minZ
+  end
+  if maxHeight then
+    maxZ = center.z + maxHeight
+    createdZone.maxZ = maxZ
+  end
   Citizen.CreateThread(function()
     while createdZone do
       if IsControlJustPressed(0, 20) then -- Z pressed
