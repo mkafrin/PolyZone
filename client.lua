@@ -30,6 +30,25 @@ local function _wn_inner_loop(p0, p1, p2, wn)
   return wn
 end
 
+function clearTbl(tbl)
+  -- Only works with contiguous (array-like) tables
+  if tbl == nil then return end
+  for i=1, #tbl do
+    tbl[i] = nil
+  end
+  return tbl
+end
+
+function copyTbl(tbl)
+  -- Only a shallow copy, and only works with contiguous (array-like) tables
+  if tbl == nil then return end
+  local ret = {}
+  for i=1, #tbl do
+    ret[i] = tbl[i]
+  end
+  return ret
+end
+
 -- Winding Number Algorithm - http://geomalgorithms.com/a03-_inclusion.html
 local function _windingNumber(point, poly)
   local wn = 0 -- winding number counter
