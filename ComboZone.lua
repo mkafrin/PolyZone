@@ -144,7 +144,8 @@ function ComboZone:new(zones, options)
     rows = rows,
     grid = {},
     debugPoly = options.debugPoly or false,
-    data = options.data or {}
+    data = options.data or {},
+    isComboZone = true,
   }
   setmetatable(zone, self)
   self.__index = self

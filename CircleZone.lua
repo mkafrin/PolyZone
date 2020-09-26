@@ -40,6 +40,7 @@ function CircleZone:new(center, radius, options)
     debugPoly = options.debugPoly or false,
     debugColor = options.debugColor or {0, 255, 0},
     data = options.data or {},
+    isCircleZone = true,
   }
   if zone.useZ then
     assert(type(zone.center) == "vector3", "Center must be vector3 if useZ is true {center=" .. center .. "}")

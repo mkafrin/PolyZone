@@ -92,6 +92,7 @@ function BoxZone:new(center, length, width, options)
   zone.minScale, zone.maxScale = minScale, maxScale
   zone.minOffset, zone.maxOffset = minOffset, maxOffset
   zone.scaleZ, zone.offsetZ = scaleZ, offsetZ
+  zone.isBoxZone = true
 
   setmetatable(zone, self)
   self.__index = self

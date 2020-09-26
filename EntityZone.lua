@@ -68,6 +68,7 @@ function EntityZone:new(entity, options)
   zone.dimensions = dimensions
   zone.useZ = options.useZ
   zone.damageEventHandlers = {}
+  zone.isEntityZone = true
   setmetatable(zone, self)
   self.__index = self
   return zone

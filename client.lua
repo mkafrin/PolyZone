@@ -420,7 +420,8 @@ function PolyZone:new(points, options)
     debugColors = options.debugColors or {},
     debugPoly = options.debugPoly or false,
     debugGrid = options.debugGrid or false,
-    data = options.data or {}
+    data = options.data or {},
+    isPolyZone = true,
   }
   _calculatePoly(poly, options)
   setmetatable(poly, self)
@@ -458,6 +459,20 @@ end
 HeadBone = 0x796e;
 function PolyZone.getPlayerHeadPosition()
   return GetPedBoneCoords(PlayerPedId(), HeadBone);
+end
+
+function PolyZone.ensureMetatable(zone)
+  if zone.isComboZone then
+    setmetatable(zone, ComboZone)
+  elseif zone.isEntityZone then
+    setmetatable(zone, EntityZone)
+  elseif zone.isBoxZone then
+    setmetatable(zone, BoxZone)
+  elseif zone.isCircleZone then
+    setmetatable(zone, CircleZone)
+  elseif zone.isPolyZone then
+    setmetatable(zone, PolyZone)
+  end
 end
 
 function PolyZone:onPointInOut(getPointCb, onPointInOutCb, waitInMS)
