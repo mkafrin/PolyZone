@@ -26,15 +26,16 @@ local function tblDifference(tblA, tblB)
 end
 
 local function _differenceBetweenInsideZones(insideZones, newInsideZones)
-  if insideZones == nil and newInsideZones == nil then
+  local insideZonesCount, newInsideZonesCount = #insideZones, #newInsideZones
+  if insideZonesCount == 0 and newInsideZonesCount == 0 then
     -- No zones to check
     return false, nil, nil
-  elseif insideZones == nil and newInsideZones ~= nil then
+  elseif insideZonesCount == 0 and newInsideZonesCount > 0 then
     -- Was in no zones last check, but in 1 or more zones now (just entered all zones in newInsideZones)
-    return true, newInsideZones, nil
-  elseif insideZones ~= nil and newInsideZones == nil then
+    return true, copyTbl(newInsideZones), nil
+  elseif insideZonesCount > 0 and newInsideZonesCount == 0 then
     -- Was in 1 or more zones last check, but in no zones now (just left all zones in insideZones)
-    return true, nil, insideZones
+    return true, nil, copyTbl(insideZones)
   end
 
   -- Check for zones that were in insideZones, but are not in newInsideZones (zones the player just left)
@@ -207,23 +208,26 @@ function ComboZone:isPointInside(point)
   return false, nil
 end
 
-function ComboZone:isPointInsideExhaustive(point)
+function ComboZone:isPointInsideExhaustive(point, insideZones)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
     return false, {}
   end
 
+  if insideZones ~= nil then
+    insideZones = clearTbl(insideZones)
+  else
+    insideZones = {}
+  end
   local zones = self:getZones(point)
-  if #zones == 0 then return false end
-  local insideZones
+  if #zones == 0 then return false, insideZones end
   for i=1, #zones do
     local zone = zones[i]
     if zone and zone:isPointInside(point) then
-      insideZones = insideZones or {}
       insideZones[#insideZones+1] = zone
     end
   end
-  return insideZones ~= nil, insideZones
+  return #insideZones > 0, insideZones
 end
 
 function ComboZone:destroy()
@@ -266,17 +270,17 @@ function ComboZone:onPointInOutExhaustive(getPointCb, onPointInOutCb, waitInMS)
   if waitInMS ~= nil then _waitInMS = waitInMS end
 
   Citizen.CreateThread(function()
-    local isInside = nil
-    local insideZones = nil
+    local isInside, insideZones = nil, {}
+    local newIsInside, newInsideZones = nil, {}
     while not self.destroyed do
       if not self.paused then
         local point = getPointCb()
-        local newIsInside, newInsideZones = self:isPointInsideExhaustive(point)
+        newIsInside, newInsideZones = self:isPointInsideExhaustive(point, newInsideZones)
         local isDifferent, enteredZones, leftZones = _differenceBetweenInsideZones(insideZones, newInsideZones)
         if newIsInside ~= isInside or isDifferent then
-          onPointInOutCb(newIsInside, point, newInsideZones, enteredZones, leftZones)
           isInside = newIsInside
-          insideZones = newInsideZones
+          insideZones = copyTbl(newInsideZones)
+          onPointInOutCb(isInside, point, insideZones, enteredZones, leftZones)
         end
       end
       Citizen.Wait(_waitInMS)
