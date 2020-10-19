@@ -62,6 +62,7 @@ end
 
 -- Initialization functions
 local function _initDebug(zone, options)
+  if options.debugBlip then zone:addDebugBlip() end
   if not options.debugPoly then
     return
   end

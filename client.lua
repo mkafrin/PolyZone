@@ -30,6 +30,15 @@ local function _wn_inner_loop(p0, p1, p2, wn)
   return wn
 end
 
+function addBlip(pos)
+  local blip = AddBlipForCoord(pos.x, pos.y, 0.0)
+  SetBlipColour(blip, 7)
+  SetBlipDisplay(blip, 8)
+  SetBlipScale(blip, 1.0)
+  SetBlipAsShortRange(blip, true)
+  return blip
+end
+
 function clearTbl(tbl)
   -- Only works with contiguous (array-like) tables
   if tbl == nil then return end
@@ -397,6 +406,7 @@ end
 
 
 local function _initDebug(poly, options)
+  if options.debugBlip then poly:addDebugBlip() end
   local debugEnabled = options.debugPoly or options.debugGrid
   if not debugEnabled then
     return
@@ -517,6 +527,10 @@ end
 
 function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
   self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
+end
+
+function PolyZone:addDebugBlip()
+  return addBlip(self.center or self:getBoundingBoxCenter())
 end
 
 function PolyZone:setPaused(paused)

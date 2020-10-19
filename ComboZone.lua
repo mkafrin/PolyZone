@@ -110,6 +110,7 @@ end
 
 
 local function _initDebug(zone, options)
+  if options.debugBlip then zone:addDebugBlip() end
   if not options.debugPoly then
     return
   end
@@ -294,6 +295,28 @@ end
 
 function ComboZone:onPlayerInOutExhaustive(onPointInOutCb, waitInMS)
   self:onPointInOutExhaustive(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
+end
+
+function ComboZone:addDebugBlip()
+  local zones = self.zones
+  local polyCount, boxCount, circleCount, entityCount = 0, 0, 0, 0
+  for i=1, #zones do
+    local zone = zones[i]
+    if zone then
+      zone:addDebugBlip()
+      if zone.isPolyZone then polyCount = polyCount + 1 end
+      if zone.isBoxZone then boxCount = boxCount + 1 end
+      if zone.isCircleZone then circleCount = circleCount + 1 end
+      if zone.isEntityZone then entityCount = entityCount + 1 end
+    end
+  end
+  local name = self.name ~= nil and ("\"" .. self.name .. "\"") or nil
+  print("[PolyZone] Debug for ComboZone { name = " .. tostring(name) .. " }:")
+  print("[PolyZone]   Total zones: " .. #zones)
+  print("[PolyZone]   BoxZones: " .. boxCount)
+  print("[PolyZone]   CircleZones: " .. circleCount)
+  print("[PolyZone]   PolyZones: " .. polyCount)
+  print("[PolyZone]   EntityZones: " .. entityCount)
 end
 
 function ComboZone:setPaused(paused)

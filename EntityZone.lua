@@ -33,15 +33,17 @@ end
 
 -- Initialization functions
 local function _initDebug(zone, options)
-  if not options.debugPoly then
+  if options.debugBlip then zone:addDebugBlip() end
+  if not options.debugPoly and not options.debugBlip then
     return
   end
   
   Citizen.CreateThread(function()
     local entity = zone.entity
+    local shouldDraw = options.debugPoly
     while not zone.destroyed do
       UpdateOffsets(entity, zone)
-      zone:draw()
+      if shouldDraw then zone:draw() end
       Citizen.Wait(0)
     end
   end)
@@ -89,6 +91,7 @@ function UpdateOffsets(entity, zone)
   if zone.useZ then
     zone.minZ, zone.maxZ = _calculateMinAndMaxZ(entity, zone.dimensions, zone.scaleZ, zone.offsetZ, pos)
   end
+  if zone.debugBlip then SetBlipCoords(zone.debugBlip, pos.x, pos.y, 0.0) end
 end
 
 
@@ -132,4 +135,10 @@ function EntityZone:destroy()
   end
   self.damageEventHandlers = {}
   PolyZone.destroy(self)
+end
+
+function EntityZone:addDebugBlip()
+  local blip = PolyZone.addDebugBlip(self)
+  self.debugBlip = blip
+  return blip
 end
