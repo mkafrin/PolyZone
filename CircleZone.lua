@@ -2,6 +2,8 @@ CircleZone = {}
 -- Inherits from PolyZone
 setmetatable(CircleZone, { __index = PolyZone })
 
+local cylinderDrawOverlapFactor = 0.75
+
 function CircleZone:draw()
   local center = self.center
   local debugColor = self.debugColor
@@ -11,7 +13,12 @@ function CircleZone:draw()
     DrawMarker(28, center.x, center.y, center.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, radius, radius, radius, r, g, b, 48, false, false, 2, nil, nil, false)
   else
     local diameter = self.diameter
-    DrawMarker(1, center.x, center.y, -200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, diameter, diameter, 400.0, r, g, b, 96, false, false, 2, nil, nil, false)
+    local minZ, maxZ = self.minZ, self.maxZ
+    local z = minZ ~= nil and minZ or -200.0
+    local height = (minZ ~= nil and maxZ ~= nil) and (maxZ - minZ) or 400.0
+    local overlapHeight = height * cylinderDrawOverlapFactor
+    DrawMarker(1, center.x, center.y, z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, diameter, diameter, overlapHeight, r, g, b, 96, false, false, 2, nil, nil, false)
+    DrawMarker(1, center.x, center.y, z + height, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, diameter, diameter, -overlapHeight, r, g, b, 96, false, false, 2, nil, nil, false)
   end
 end
 
@@ -38,6 +45,8 @@ function CircleZone:new(center, radius, options)
     radius = radius + 0.0,
     diameter = radius * 2.0,
     useZ = options.useZ or false,
+    minZ = tonumber(options.minZ) or nil,
+    maxZ = tonumber(options.maxZ) or nil,
     debugPoly = options.debugPoly or false,
     debugColor = options.debugColor or {0, 255, 0},
     data = options.data or {},
@@ -63,11 +72,15 @@ function CircleZone:isPointInside(point)
     return false
   end
 
+  local minZ, maxZ = self.minZ, self.maxZ
   local center = self.center
   local radius = self.radius
 
   if self.useZ then
     return #(point - center) < radius
+  elseif minZ and maxZ then
+    local z = point.z
+    return z >= minZ and z <= maxZ and #(point.xy - center.xy) < radius
   else
     return #(point.xy - center.xy) < radius
   end
