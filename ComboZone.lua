@@ -157,6 +157,9 @@ end
 function ComboZone:Create(zones, options)
   local zone = ComboZone:new(zones, options)
   _initDebug(zone, options)
+  AddEventHandler("polyzone:pzcomboinfo", function ()
+      zone:printInfo()
+  end)
   return zone
 end
 
@@ -305,6 +308,31 @@ function ComboZone:addDebugBlip()
     local zone = zones[i]
     if zone then zone:addDebugBlip() end
   end
+end
+
+function ComboZone:printInfo()
+  local zones = self.zones
+  local polyCount, boxCount, circleCount, entityCount, comboCount = 0, 0, 0, 0, 0
+  for i=1, #zones do
+    local zone = zones[i]
+    if zone then
+      if zone.isEntityZone then entityCount = entityCount + 1
+      elseif zone.isCircleZone then circleCount = circleCount + 1
+      elseif zone.isComboZone then comboCount = comboCount + 1
+      elseif zone.isBoxZone then boxCount = boxCount + 1
+      elseif zone.isPolyZone then polyCount = polyCount + 1 end
+    end
+  end
+  local name = self.name ~= nil and ("\"" .. self.name .. "\"") or nil
+  print("-----------------------------------------------------")
+  print("[PolyZone] Info for ComboZone { name = " .. tostring(name) .. " }:")
+  print("[PolyZone]   Total zones: " .. #zones)
+  if boxCount > 0 then print("[PolyZone]   BoxZones: " .. boxCount) end
+  if circleCount > 0 then print("[PolyZone]   CircleZones: " .. circleCount) end
+  if polyCount > 0 then print("[PolyZone]   PolyZones: " .. polyCount) end
+  if entityCount > 0 then print("[PolyZone]   EntityZones: " .. entityCount) end
+  if comboCount > 0 then print("[PolyZone]   ComboZones: " .. comboCount) end
+  print("-----------------------------------------------------")
 end
 
 function ComboZone:setPaused(paused)
