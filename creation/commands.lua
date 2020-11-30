@@ -16,7 +16,9 @@ RegisterCommand("pzcreate", function(src, args)
     })
     return
   end
-  local name = GetUserInput("Enter name of zone:")
+  local name = nil
+  if #args >= 2 then name = args[2]
+  else name = GetUserInput("Enter name of zone:") end
   if name == nil or name == "" then
     TriggerEvent('chat:addMessage', {
       color = { 255, 0, 0},
@@ -25,7 +27,7 @@ RegisterCommand("pzcreate", function(src, args)
     })
     return
   end
-  TriggerEvent("polyzone:pzcreate", zoneType, name)
+  TriggerEvent("polyzone:pzcreate", zoneType, name, args)
 end)
 
 RegisterCommand("pzadd", function(src, args)
