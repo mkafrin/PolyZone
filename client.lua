@@ -529,6 +529,23 @@ function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
   self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
 end
 
+function PolyZone:addEvent(name, cb)
+  if self.events == nil then self.events = {} end
+  RegisterNetEvent(name)
+  self.events[name] = AddEventHandler(name, function (...)
+    if self:isPointInside(PolyZone.getPlayerPosition()) then
+      cb(...)
+    end
+  end)
+end
+
+function PolyZone:removeEvent(name)
+  if self.events and self.events[name] then
+    RemoveEventHandler(self.events[name])
+    self.events[name] = nil
+  end
+end
+
 function PolyZone:addDebugBlip()
   return addBlip(self.center or self:getBoundingBoxCenter())
 end

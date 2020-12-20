@@ -301,6 +301,14 @@ function ComboZone:onPlayerInOutExhaustive(onPointInOutCb, waitInMS)
   self:onPointInOutExhaustive(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
 end
 
+function ComboZone:addEvent(name, cb)
+  PolyZone.addEvent(self, name, cb)
+end
+
+function ComboZone:removeEvent(name)
+  PolyZone.removeEvent(self, name)
+end
+
 function ComboZone:addDebugBlip()
   self.debugBlip = true
   local zones = self.zones
