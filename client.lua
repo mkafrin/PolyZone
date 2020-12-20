@@ -207,14 +207,20 @@ local function _pointInPoly(point, poly)
   end
 
   -- Returns true if the grid cell associated with the point is entirely inside the poly
-  if poly.grid then
+  local grid = poly.grid
+  if grid then
     local gridDivisions = poly.gridDivisions
     local size = poly.size
     local gridPosX = x - minX
     local gridPosY = y - minY
     local gridCellX = (gridPosX * gridDivisions) // size.x
     local gridCellY = (gridPosY * gridDivisions) // size.y
-    if (poly.grid[gridCellY + 1][gridCellX + 1]) then return true end
+    local gridCellValue = grid[gridCellY + 1][gridCellX + 1]
+    if gridCellValue == nil and poly.lazyGrid then
+      gridCellValue = _isGridCellInsidePoly(gridCellX, gridCellY, poly)
+      grid[gridCellY + 1][gridCellX + 1] = gridCellValue
+    end
+    if gridCellValue then return true end
   end
 
   return _windingNumber(point, poly.points)
@@ -240,7 +246,7 @@ local function _calculateGridCellPoints(cellX, cellY, poly)
 end
 
 
-local function _isGridCellInsidePoly(cellX, cellY, poly)
+function _isGridCellInsidePoly(cellX, cellY, poly)
   gridCellPoints = _calculateGridCellPoints(cellX, cellY, poly)
   local polyPoints = {table.unpack(poly.points)}
   -- Connect the polygon to its starting point
@@ -340,6 +346,9 @@ end
 
 -- Calculate for each grid cell whether it is entirely inside the polygon, and store if true
 local function _createGrid(poly, options)
+  poly.gridArea = 0.0
+  poly.gridCellWidth = poly.size.x / poly.gridDivisions
+  poly.gridCellHeight = poly.size.y / poly.gridDivisions
   Citizen.CreateThread(function()
     -- Calculate all grid cells that are entirely inside the polygon
     local isInside = {}
@@ -391,16 +400,21 @@ local function _calculatePoly(poly, options)
   poly.boundingRadius = math.sqrt(poly.size.y * poly.size.y + poly.size.x * poly.size.x) / 2
   poly.center = (poly.max + poly.min) / 2
   poly.area = _calculatePolygonArea(poly.points)
-  if poly.useGrid then
+  if poly.useGrid and not poly.lazyGrid then
     if options.debugGrid then
       poly.gridXPoints = {}
       poly.gridYPoints = {}
       poly.lines = {}
     end
-    poly.gridArea = 0.0
+    _createGrid(poly, options)
+  elseif poly.useGrid then
+    local isInside = {}
+    for y=1, poly.gridDivisions do
+      isInside[y] = {}
+    end
+    poly.grid = isInside
     poly.gridCellWidth = poly.size.x / poly.gridDivisions
     poly.gridCellHeight = poly.size.y / poly.gridDivisions
-    _createGrid(poly, options)
   end
 end
 
@@ -435,6 +449,8 @@ function PolyZone:new(points, options)
   options = options or {}
   local useGrid = options.useGrid
   if useGrid == nil then useGrid = true end
+  local lazyGrid = options.lazyGrid
+  if lazyGrid == nil then lazyGrid = true end
   local poly = {
     name = tostring(options.name) or nil,
     points = points,
@@ -445,6 +461,7 @@ function PolyZone:new(points, options)
     minZ = tonumber(options.minZ) or nil,
     maxZ = tonumber(options.maxZ) or nil,
     useGrid = useGrid,
+    lazyGrid = lazyGrid,
     gridDivisions = tonumber(options.gridDivisions) or 30,
     debugColors = options.debugColors or {},
     debugPoly = options.debugPoly or false,
@@ -452,6 +469,7 @@ function PolyZone:new(points, options)
     data = options.data or {},
     isPolyZone = true,
   }
+  if poly.debugGrid then poly.lazyGrid = false end
   _calculatePoly(poly, options)
   setmetatable(poly, self)
   self.__index = self
