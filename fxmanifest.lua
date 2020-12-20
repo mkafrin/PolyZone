@@ -15,5 +15,6 @@ client_scripts {
 }
 
 server_scripts {
+  'creation_sv.lua',
   'server.lua'
 }
