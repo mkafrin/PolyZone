@@ -1,8 +1,9 @@
+eventPrefix = '__PolyZone__:'
+PolyZone = {}
+
 local defaultColorWalls = {0, 255, 0}
 local defaultColorOutline = {255, 0, 0}
 local defaultColorGrid = {255, 255, 255}
-
-PolyZone = {}
 
 -- Utility functions
 local abs = math.abs
@@ -547,20 +548,21 @@ function PolyZone:onPlayerInOut(onPointInOutCb, waitInMS)
   self:onPointInOut(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
 end
 
-function PolyZone:addEvent(name, cb)
+function PolyZone:addEvent(eventName)
   if self.events == nil then self.events = {} end
-  RegisterNetEvent(name)
-  self.events[name] = AddEventHandler(name, function (...)
+  local internalEventName = eventPrefix .. eventName
+  RegisterNetEvent(internalEventName)
+  self.events[eventName] = AddEventHandler(internalEventName, function (...)
     if self:isPointInside(PolyZone.getPlayerPosition()) then
-      cb(...)
+      TriggerEvent(eventName, ...)
     end
   end)
 end
 
-function PolyZone:removeEvent(name)
-  if self.events and self.events[name] then
-    RemoveEventHandler(self.events[name])
-    self.events[name] = nil
+function PolyZone:removeEvent(eventName)
+  if self.events and self.events[eventName] then
+    RemoveEventHandler(self.events[eventName])
+    self.events[eventName] = nil
   end
 end
 
