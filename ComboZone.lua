@@ -195,7 +195,7 @@ function ComboZone:AddZone(zone)
   if self.debugBlip then zone:addDebugBlip() end
 end
 
-function ComboZone:isPointInside(point)
+function ComboZone:isPointInside(point, zoneName)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
     return false, {}
@@ -206,7 +206,7 @@ function ComboZone:isPointInside(point)
 
   for i=1, #zones do
     local zone = zones[i]
-    if zone and zone:isPointInside(point) then
+    if zone and (zoneName == nil or zoneName == zone.name) and zone:isPointInside(point) then
       return true, zone
     end
   end
@@ -301,8 +301,15 @@ function ComboZone:onPlayerInOutExhaustive(onPointInOutCb, waitInMS)
   self:onPointInOutExhaustive(PolyZone.getPlayerPosition, onPointInOutCb, waitInMS)
 end
 
-function ComboZone:addEvent(name, cb)
-  PolyZone.addEvent(self, name, cb)
+function ComboZone:addEvent(eventName, zoneName)
+  if self.events == nil then self.events = {} end
+  local internalEventName = eventPrefix .. eventName
+  RegisterNetEvent(internalEventName)
+  self.events[eventName] = AddEventHandler(internalEventName, function (...)
+    if self:isPointInside(PolyZone.getPlayerPosition(), zoneName) then
+      TriggerEvent(eventName, ...)
+    end
+  end)
 end
 
 function ComboZone:removeEvent(name)
