@@ -54,9 +54,14 @@ function EntityZone:new(entity, options)
 
   local min, max = GetModelDimensions(GetEntityModel(entity))
   local dimensions = {min, max}
+  
+  local padding = 0.0
+  if options.padding ~= nil then
+    padding = options.padding + 0.0
+  end
 
-  local length = max.y - min.y
-  local width = max.x - min.x
+  local length = (max.y - min.y) + padding
+  local width = (max.x - min.x) + padding
   local pos = GetEntityCoords(entity)
 
   local zone = BoxZone:new(pos, length, width, options)
