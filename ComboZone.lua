@@ -47,24 +47,6 @@ local function _differenceBetweenInsideZones(insideZones, newInsideZones)
   return isDifferent, enteredZones, leftZones
 end
 
-local function _circleRectCollide(circleX, circleY, radius, rectX, rectY, rectWidth, rectLength)
-  -- temporary variables to set edges for testing
-  local testX = circleX
-  local testY = circleY
-
-  -- which edge is closest?
-  if circleX < rectX then testX = rectX      					                    -- test left edge
-  elseif circleX > rectX + rectWidth then testX = rectX + rectWidth end   -- right edge
-  if circleY < rectY then testY = rectY     		                          -- top edge
-  elseif circleY > rectY + rectLength then testY = rectY + rectLength end -- bottom edge
-
-  -- get distance from closest edges
-  local distX = circleX - testX
-  local distY = circleY - testY
-
-	return distX * distX + distY * distY < radius * radius
-end
-
 local function _getZoneBounds(zone)
   local center = zone.center
   local radius = zone.radius or zone.boundingRadius
@@ -86,21 +68,6 @@ local function _addZoneToGrid(grid, zone)
     end
     grid[y] = row
   end
-end
-
-local function _zonesInGridCell(x, y, zones)
-  local zonesInCell = {}
-  local startX = mapMinX + xDelta * x
-  local startY = mapMinY + yDelta * y
-  for _, zone in ipairs(zones) do
-    -- For each zone, append to zonesInCell IF it is inside the grid cell at x,y
-    local zoneCenter = zone.center
-    local radius = zone.radius or zone.boundingRadius
-    if _circleRectCollide(zoneCenter.x, zoneCenter.y, radius, startX, startY, xDelta, yDelta) then
-      zonesInCell[#zonesInCell+1] = zone
-    end
-  end
-  return zonesInCell
 end
 
 local function _getGridCell(pos)
