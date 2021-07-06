@@ -386,21 +386,24 @@ end
 
 -- Initialization functions
 local function _calculatePoly(poly, options)
-  local minX, minY = math.maxinteger, math.maxinteger
-  local maxX, maxY = math.mininteger, math.mininteger
-  for _, p in ipairs(poly.points) do
-    minX = math.min(minX, p.x)
-    minY = math.min(minY, p.y)
-    maxX = math.max(maxX, p.x)
-    maxY = math.max(maxY, p.y)
+  if not poly.min or not poly.max or not poly.size or not poly.center or not poly.area then
+    local minX, minY = math.maxinteger, math.maxinteger
+    local maxX, maxY = math.mininteger, math.mininteger
+    for _, p in ipairs(poly.points) do
+      minX = math.min(minX, p.x)
+      minY = math.min(minY, p.y)
+      maxX = math.max(maxX, p.x)
+      maxY = math.max(maxY, p.y)
+    end
+    poly.min = vector2(minX, minY)
+    poly.max = vector2(maxX, maxY)
+    poly.size = poly.max - poly.min
+    poly.center = (poly.max + poly.min) / 2
+    poly.area = _calculatePolygonArea(poly.points)
   end
 
-  poly.max = vector2(maxX, maxY)
-  poly.min = vector2(minX, minY)
-  poly.size = poly.max - poly.min
   poly.boundingRadius = math.sqrt(poly.size.y * poly.size.y + poly.size.x * poly.size.x) / 2
-  poly.center = (poly.max + poly.min) / 2
-  poly.area = _calculatePolygonArea(poly.points)
+
   if poly.useGrid and not poly.lazyGrid then
     if options.debugGrid then
       poly.gridXPoints = {}
@@ -455,10 +458,11 @@ function PolyZone:new(points, options)
   local poly = {
     name = tostring(options.name) or nil,
     points = points,
-    center = vector2(0, 0),
-    size = vector2(0, 0),
-    max = vector2(0, 0),
-    min = vector2(0, 0),
+    center = options.center,
+    size = options.size,
+    max = options.max,
+    min = options.min,
+    area = options.area,
     minZ = tonumber(options.minZ) or nil,
     maxZ = tonumber(options.maxZ) or nil,
     useGrid = useGrid,

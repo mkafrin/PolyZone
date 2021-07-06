@@ -75,16 +75,32 @@ local function _initDebug(zone, options)
   end)
 end
 
+local defaultMinOffset, defaultMaxOffset, defaultMinScale, defaultMaxScale = vector3(0.0, 0.0, 0.0), vector3(0.0, 0.0, 0.0), vector3(1.0, 1.0, 1.0), vector3(1.0, 1.0, 1.0)
+local defaultScaleZ, defaultOffsetZ = {defaultMinScale.z, defaultMaxScale.z}, {defaultMinOffset.z, defaultMaxOffset.z}
 function BoxZone:new(center, length, width, options)
-  local minOffset, maxOffset, minScale, maxScale = _calculateScaleAndOffset(options)
-  local scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
+  local minOffset, maxOffset, minScale, maxScale = defaultMinOffset, defaultMaxOffset, defaultMinScale, defaultMaxScale
+  local scaleZ, offsetZ = defaultScaleZ, defaultOffsetZ
+  if options.scale ~= nil or options.offset ~= nil then
+    minOffset, maxOffset, minScale, maxScale = _calculateScaleAndOffset(options)
+    scaleZ, offsetZ = {minScale.z, maxScale.z}, {minOffset.z, maxOffset.z}
+  end
 
   local points = _calculatePoints(center, length, width, minScale, maxScale, minOffset, maxOffset)
+  local min = points[1]
+  local max = points[3]
+  local size = max - min
 
   -- Box Zones don't use the grid optimization because they are already rectangles/cubes
   options.useGrid = false
+
+  -- Pre-setting all these values to avoid PolyZone:new() having to calculate them
+  options.min = min
+  options.max = max
+  options.size = size
+  options.center = center
+  options.area = size.x * size.y
+
   local zone = PolyZone:new(points, options)
-  zone.center = center
   zone.length = length
   zone.width = width
   zone.startPos = center.xy
