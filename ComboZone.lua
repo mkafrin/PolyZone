@@ -57,6 +57,19 @@ local function _getZoneBounds(zone)
   return minY, maxY, minX, maxX
 end
 
+local function _removeZoneByFunction(predicateFn, zones)
+  if predicateFn == nil or zones == nil or #zones == 0 then return end
+
+  for i=1, #zones do
+    local possibleZone = zones[i]
+    if possibleZone and predicateFn(possibleZone) then
+      table.remove(zones, i)
+      return possibleZone
+    end
+  end
+  return nil
+end
+
 local function _addZoneToGrid(grid, zone)
   local minY, maxY, minX, maxX = _getZoneBounds(zone)
   for y=minY, maxY do
@@ -163,6 +176,33 @@ function ComboZone:AddZone(zone)
     _addZoneToGrid(self.grid, zone)
   end
   if self.debugBlip then zone:addDebugBlip() end
+end
+
+function ComboZone:RemoveZone(nameOrFn)
+  local predicateFn = nameOrFn
+  if type(nameOrFn) == "string" then
+    -- Create on the fly predicate function if nameOrFn is a string (zone name)
+    predicateFn = function (zone) return zone.name == nameOrFn end
+  elseif type(nameOrFn) ~= "function" then
+    return nil
+  end
+
+  -- Remove from zones table
+  local zone = _removeZoneByFunction(predicateFn, self.zones)
+  if not zone then return nil end
+
+  -- Remove from grid cache
+  local grid = self.grid
+  local minY, maxY, minX, maxX = _getZoneBounds(zone)
+  for y=minY, maxY do
+    local row = grid[y]
+    if row then
+      for x=minX, maxX do
+        _removeZoneByFunction(predicateFn, row[x])
+      end
+    end
+  end
+  return zone
 end
 
 function ComboZone:isPointInside(point, zoneName)
