@@ -65,14 +65,26 @@ local function _circleRectCollide(circleX, circleY, radius, rectX, rectY, rectWi
 	return distX * distX + distY * distY < radius * radius
 end
 
-local function _addZoneToRows(rows, zone)
+local function _getZoneBounds(zone)
+  local center = zone.center
   local radius = zone.radius or zone.boundingRadius
-  local minY = (zone.center.y - radius - mapMinY) // yDelta
-  local maxY = (zone.center.y + radius - mapMinY) // yDelta
-  for i=minY, maxY do
-    local row = rows[i] or {}
-    row[#row+1] = zone
-    rows[i] = row
+  local minY = (center.y - radius - mapMinY) // yDelta
+  local maxY = (center.y + radius - mapMinY) // yDelta
+  local minX = (center.x - radius - mapMinX) // xDelta
+  local maxX = (center.x + radius - mapMinX) // xDelta
+  return minY, maxY, minX, maxX
+end
+
+local function _addZoneToGrid(grid, zone)
+  local minY, maxY, minX, maxX = _getZoneBounds(zone)
+  for y=minY, maxY do
+    local row = grid[y] or {}
+    for x=minX, maxX do
+      local cell = row[x] or {}
+      cell[#cell+1] = zone
+      row[x] = cell
+    end
+    grid[y] = row
   end
 end
 
@@ -125,14 +137,14 @@ end
 
 function ComboZone:new(zones, options)
   options = options or {}
-  local rows = {}
-  -- Add a unique id for each zone in the ComboZone and add to rows cache
+  local grid = {}
+  -- Add a unique id for each zone in the ComboZone and add to grid cache
   for i=1, #zones do
     local zone = zones[i]
     if zone then
       zone.id = i
     end
-    _addZoneToRows(rows, zone)
+    _addZoneToGrid(grid, zone)
   end
 
   local useGrid = options.useGrid
@@ -143,8 +155,7 @@ function ComboZone:new(zones, options)
     name = tostring(options.name) or nil,
     zones = zones,
     useGrid = useGrid,
-    rows = rows,
-    grid = {},
+    grid = grid,
     debugPoly = options.debugPoly or false,
     data = options.data or {},
     isComboZone = true,
@@ -169,17 +180,12 @@ function ComboZone:getZones(point)
   end
   
   local grid = self.grid
-  local gridX, gridY = _getGridCell(point)
-  local row = grid[gridY]
-  if row == nil then
-    row = {}
+  local x, y = _getGridCell(point)
+  local row = grid[y]
+  if row == nil or row[x] == nil then
+    return nil
   end
-  if row[gridX] == nil then
-    local zonesInCell = _zonesInGridCell(gridX, gridY, self.rows[gridY] or {})
-    row[gridX] = zonesInCell
-    grid[gridY] = row
-  end
-  return grid[gridY][gridX]
+  return row[x]
 end
 
 function ComboZone:AddZone(zone)
@@ -187,8 +193,7 @@ function ComboZone:AddZone(zone)
   local newIndex = #zones+1
   zone.id = newIndex
   zones[newIndex] = zone
-  self.grid = {}
-  _addZoneToRows(self.rows, zone)
+  _addZoneToGrid(self.grid, zone)
   if self.useGrid == nil and newIndex >= 25 then
     self.useGrid = true
   end
@@ -202,7 +207,7 @@ function ComboZone:isPointInside(point, zoneName)
   end
 
   local zones = self:getZones(point)
-  if #zones == 0 then return false end
+  if not zones or #zones == 0 then return false end
 
   for i=1, #zones do
     local zone = zones[i]
@@ -225,7 +230,7 @@ function ComboZone:isPointInsideExhaustive(point, insideZones)
     insideZones = {}
   end
   local zones = self:getZones(point)
-  if #zones == 0 then return false, insideZones end
+  if not zones or #zones == 0 then return false, insideZones end
   for i=1, #zones do
     local zone = zones[i]
     if zone and zone:isPointInside(point) then
