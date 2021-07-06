@@ -104,6 +104,9 @@ end
 
 function ComboZone:new(zones, options)
   options = options or {}
+  local useGrid = options.useGrid
+  if useGrid == nil then useGrid = true end
+
   local grid = {}
   -- Add a unique id for each zone in the ComboZone and add to grid cache
   for i=1, #zones do
@@ -111,13 +114,9 @@ function ComboZone:new(zones, options)
     if zone then
       zone.id = i
     end
-    _addZoneToGrid(grid, zone)
+    if useGrid then _addZoneToGrid(grid, zone) end
   end
 
-  local useGrid = options.useGrid
-  if useGrid == nil and #zones >= 25 then
-    useGrid = true
-  end
   local zone = {
     name = tostring(options.name) or nil,
     zones = zones,
@@ -160,9 +159,8 @@ function ComboZone:AddZone(zone)
   local newIndex = #zones+1
   zone.id = newIndex
   zones[newIndex] = zone
-  _addZoneToGrid(self.grid, zone)
-  if self.useGrid == nil and newIndex >= 25 then
-    self.useGrid = true
+  if self.useGrid then
+    _addZoneToGrid(self.grid, zone)
   end
   if self.debugBlip then zone:addDebugBlip() end
 end
