@@ -44,5 +44,8 @@ For help troubleshooting issues you've encountered (that aren't in the FAQ), or 
 **I'm getting no errors, but I can't see my zone in the right place when I turn on debug drawing**
 > If you are using them, is minZ and maxZ set correctly? Or if you are using a CircleZone with useZ=true, is your center's Z value correct? If using a PolyZone, did you manually select all your points, or use the creation script? If you did it manually, the ordering of the points could be causing issues. Are you using the correct option to enable debug drawing? For PolyZones, you can use `debugPoly` and `debugGrid`, but for other zones, `debugPoly` is the only one that works.
 
+**Is PolyZone faster than a distance check?**
+> There's a page in the wiki for that, [here](https://github.com/mkafrin/PolyZone/wiki/Is-PolyZone-faster-than-a-distance-check%3F).
+
 ## License
 **Please see the LICENSE file. That file will always overrule anything mentioned in the README.md or wiki**
