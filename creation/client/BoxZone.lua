@@ -8,22 +8,22 @@ local function handleInput(useZ, heading, length, width, center)
     end
 
     DisableControlAction(0, 81, true)
-    if IsDisabledControlJustPressed(0, 81) then
-      if IsControlPressed(0, 19) then -- alt held down
+    if IsControlKeyJustPressed(0, 81) then
+      if IsControlKeyJustPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width - scaleDelta), center
       end
-      if IsControlPressed(0, 21) then -- shift held down
+      if IsControlKeyJustPressed(0, 21) then -- shift held down
         return heading, math.max(0.0, length - scaleDelta), width, center
       end
       return (heading - headingDelta) % 360, length, width, center
     end
     
     DisableControlAction(0, 99, true)
-    if IsDisabledControlJustPressed(0, 99) then
-      if IsControlPressed(0, 19) then -- alt held down
+    if IsControlKeyJustPressed(0, 99) then
+      if IsControlKeyJustPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width + scaleDelta), center
       end
-      if IsControlPressed(0, 21) then -- shift held down
+      if IsControlKeyJustPressed(0, 21) then -- shift held down
         return heading, math.max(0.0, length + scaleDelta), width, center
       end
       return (heading + headingDelta) % 360, length, width, center
@@ -45,22 +45,22 @@ function handleZ(minZ, maxZ)
 
   BlockWeaponWheelThisFrame()
   DisableControlAction(0, 81, true)
-  if IsDisabledControlJustPressed(0, 81) then
-    if IsControlPressed(0, 19) then -- alt held down
+  if IsControlKeyJustPressed(0, 81) then
+    if IsControlKeyJustPressed(0, 19) then -- alt held down
       return minZ - delta, maxZ
     end
-    if IsControlPressed(0, 21) then -- shift held down
+    if IsControlKeyJustPressed(0, 21) then -- shift held down
       return minZ, maxZ - delta
     end
     return minZ - delta, maxZ - delta
   end
   
   DisableControlAction(0, 99, true)
-  if IsDisabledControlJustPressed(0, 99) then
-    if IsControlPressed(0, 19) then -- alt held down
+  if IsControlKeyJustPressed(0, 99) then
+    if IsControlKeyJustPressed(0, 19) then -- alt held down
       return minZ + delta, maxZ
     end
-    if IsControlPressed(0, 21) then -- shift held down
+    if IsControlKeyJustPressed(0, 21) then -- shift held down
       return minZ, maxZ + delta
     end
     return minZ + delta, maxZ + delta
