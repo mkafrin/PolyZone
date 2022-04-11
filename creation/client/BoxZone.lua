@@ -3,27 +3,35 @@ local function handleInput(useZ, heading, length, width, center)
     local scaleDelta, headingDelta = 0.2, 5
     BlockWeaponWheelThisFrame()
     DisableControlAction(0, 36, true)
+    DisableControlAction(0, 81, true)
+    DisableControlAction(0, 99, true)
+
     if IsDisabledControlPressed(0, 36) then -- ctrl held down
       scaleDelta, headingDelta = 0.05, 1
     end
 
-    DisableControlAction(0, 81, true)
-    if IsControlKeyJustPressed(0, 81) then
-      if IsControlKeyJustPressed(0, 19) then -- alt held down
+    if IsDisabledControlJustPressed(0, 81) then -- scroll wheel down just pressed
+      EnableControlAction(0, 19, true)
+      EnableControlAction(0, 21, true)
+
+      if IsControlPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width - scaleDelta), center
       end
-      if IsControlKeyJustPressed(0, 21) then -- shift held down
+      if IsControlPressed(0, 21) then -- shift held down
         return heading, math.max(0.0, length - scaleDelta), width, center
       end
       return (heading - headingDelta) % 360, length, width, center
     end
     
-    DisableControlAction(0, 99, true)
-    if IsControlKeyJustPressed(0, 99) then
-      if IsControlKeyJustPressed(0, 19) then -- alt held down
+
+    if IsDisabledControlJustPressed(0, 99) then -- scroll wheel up just pressed
+      EnableControlAction(0, 19, true)
+      EnableControlAction(0, 21, true)
+
+      if IsControlPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width + scaleDelta), center
       end
-      if IsControlKeyJustPressed(0, 21) then -- shift held down
+      if IsControlPressed(0, 21) then -- shift held down
         return heading, math.max(0.0, length + scaleDelta), width, center
       end
       return (heading + headingDelta) % 360, length, width, center
@@ -39,28 +47,36 @@ end
 function handleZ(minZ, maxZ)
   local delta = 0.2
   DisableControlAction(0, 36, true)
+  DisableControlAction(0, 99, true)
+  DisableControlAction(0, 81, true)
+
   if IsDisabledControlPressed(0, 36) then -- ctrl held down
     delta = 0.05
   end
 
   BlockWeaponWheelThisFrame()
-  DisableControlAction(0, 81, true)
-  if IsControlKeyJustPressed(0, 81) then
-    if IsControlKeyJustPressed(0, 19) then -- alt held down
+
+  if IsDisabledControlJustPressed(0, 81) then -- scroll wheel down just pressed
+    EnableControlAction(0, 19, true)
+    EnableControlAction(0, 21, true)
+
+    if IsControlPressed(0, 19) then -- alt held down
       return minZ - delta, maxZ
     end
-    if IsControlKeyJustPressed(0, 21) then -- shift held down
+    if IsControlPressed(0, 21) then -- shift held down
       return minZ, maxZ - delta
     end
     return minZ - delta, maxZ - delta
   end
   
-  DisableControlAction(0, 99, true)
-  if IsControlKeyJustPressed(0, 99) then
-    if IsControlKeyJustPressed(0, 19) then -- alt held down
+  if IsDisabledControlJustPressed(0, 99) then -- scroll wheel up just pressed
+    EnableControlAction(0, 19, true)
+    EnableControlAction(0, 21, true)
+
+    if IsControlPressed(0, 19) then -- alt held down
       return minZ + delta, maxZ
     end
-    if IsControlKeyJustPressed(0, 21) then -- shift held down
+    if IsControlPressed(0, 21) then -- shift held down
       return minZ, maxZ + delta
     end
     return minZ + delta, maxZ + delta
@@ -82,6 +98,7 @@ function boxStart(name, heading, length, width, minHeight, maxHeight)
   end
   Citizen.CreateThread(function()
     while createdZone do
+      EnableControlAction(0, 20, true)
       if IsControlJustPressed(0, 20) then -- Z pressed
         useZ = not useZ
         if useZ then

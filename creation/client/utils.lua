@@ -29,31 +29,33 @@ end
 function handleArrowInput(center, heading)
   delta = 0.05
   DisableControlAction(0, 36, true)
-  if IsControlKeyJustPressed(0, 36) then -- ctrl held down
+  if IsDisabledControlPressed(0, 36) then -- ctrl held down
     delta = 0.01
   end
 
-  DisableControlAction(0, 27, true)
-  if IsControlKeyJustPressed(0, 27) then -- arrow up
+  EnableControlAction(0, 172, true)
+  if IsControlPressed(0, 172) then -- arrow up
     local newCenter =  PolyZone.rotate(center.xy, vector2(center.x, center.y + delta), heading)
     return vector3(newCenter.x, newCenter.y, center.z)
   end
-  if IsControlKeyJustPressed(0, 173) then -- arrow down
+
+  EnableControlAction(0, 173, true)
+  if IsControlPressed(0, 173) then -- arrow down
     local newCenter =  PolyZone.rotate(center.xy, vector2(center.x, center.y - delta), heading)
     return vector3(newCenter.x, newCenter.y, center.z)
   end
-  if IsControlKeyJustPressed(0, 174) then -- arrow left
+
+  EnableControlAction(0, 174, true)
+  if IsControlPressed(0, 174) then -- arrow left
     local newCenter =  PolyZone.rotate(center.xy, vector2(center.x - delta, center.y), heading)
     return vector3(newCenter.x, newCenter.y, center.z)
   end
-  if IsControlKeyJustPressed(0, 175) then -- arrow right
+
+  EnableControlAction(0, 175, true)
+  if IsControlPressed(0, 175) then -- arrow right
     local newCenter =  PolyZone.rotate(center.xy, vector2(center.x + delta, center.y), heading)
     return vector3(newCenter.x, newCenter.y, center.z)
   end
 
   return center
-end
-
-IsControlKeyJustPressed = function(inputGroup, control)
-  return IsControlPressed(inputGroup, control) or IsDisabledControlPressed(inputGroup, control)
 end
