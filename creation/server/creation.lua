@@ -45,7 +45,7 @@ function parsePoly(zone)
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) ..")\n"
       end
     end
-    printout = printout .. "},\nname=\"" .. zone.name .. "\",\n--minZ = " .. zone.minZ .. ",\n--maxZ = " .. zone.maxZ .. ",\n--debugPoly=true\n\n"
+    printout = printout .. "},\nname = \"" .. zone.name .. "\",\n--minZ = " .. zone.minZ .. ",\n--maxZ = " .. zone.maxZ .. ",\n--debugPoly = true\n\n"
     return printout
   else
     local printout = printoutHeader(zone.name)
@@ -57,7 +57,7 @@ function parsePoly(zone)
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) ..")\n"
       end
     end
-    printout = printout .. "}, {\n  name=\"" .. zone.name .. "\",\n  --minZ = " .. zone.minZ .. ",\n  --maxZ = " .. zone.maxZ .. "\n})\n\n"
+    printout = printout .. "}, {\n  name = \"" .. zone.name .. "\",\n  --minZ = " .. zone.minZ .. ",\n  --maxZ = " .. zone.maxZ .. "\n})\n\n"
     return printout
   end
 end
@@ -68,14 +68,14 @@ function parseCircle(zone)
     printout = printout .. "coords = "
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."),\n"
     printout = printout .. "radius = " .. tostring(zone.radius) .. ",\n"
-    printout = printout .. "name=\"" .. zone.name .. "\",\nuseZ=" .. tostring(zone.useZ) .. ",\n--debugPoly=true\n\n"
+    printout = printout .. "name = \"" .. zone.name .. "\",\nuseZ = " .. tostring(zone.useZ) .. ",\n--debugPoly = true\n\n"
     return printout
   else
     local printout = printoutHeader(zone.name)
     printout = printout .. "CircleZone:Create("
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."), "
     printout = printout .. tostring(zone.radius) .. ", "
-    printout = printout .. "{\n  name=\"" .. zone.name .. "\",\n  useZ=" .. tostring(zone.useZ) .. ",\n  --debugPoly=true\n})\n\n"
+    printout = printout .. "{\n  name = \"" .. zone.name .. "\",\n  useZ = " .. tostring(zone.useZ) .. ",\n  --debugPoly = true\n})\n\n"
     return printout
   end
 end
@@ -87,12 +87,12 @@ function parseBox(zone)
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."),\n"
     printout = printout .. "length = " .. tostring(zone.length) .. ",\n"
     printout = printout .. "width = " .. tostring(zone.width) .. ",\n"
-    printout = printout .. "name = \"" .. zone.name .. "\",\nheading = " .. zone.heading .. ",\n--debugPoly=true"
+    printout = printout .. "name = \"" .. zone.name .. "\",\nheading = " .. zone.heading .. ",\n--debugPoly = true"
     if zone.minZ then
-      printout = printout .. ",\nminZ=" .. tostring(round(zone.minZ, 2))
+      printout = printout .. ",\nminZ = " .. tostring(round(zone.minZ, 2))
     end
     if zone.maxZ then
-      printout = printout .. ",\nmaxZ=" .. tostring(round(zone.maxZ, 2))
+      printout = printout .. ",\nmaxZ = " .. tostring(round(zone.maxZ, 2))
     end
     printout = printout .. "\n\n"
     return printout
