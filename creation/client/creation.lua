@@ -59,6 +59,7 @@ AddEventHandler("polyzone:pzcreate", function(zoneType, name, args)
   end
   createdZoneType = zoneType
   drawZone = true
+  disableControlKeyInput()
   drawThread()
 end)
 
@@ -101,7 +102,6 @@ AddEventHandler("polyzone:pzlast", function()
       multiline = true,
       args = {"Me", "The command pzlast only supports BoxZone and CircleZone for now"}
     })
-  
   end
 
   local name = GetUserInput("Enter name (or leave empty to reuse last zone's name):")
@@ -124,6 +124,7 @@ AddEventHandler("polyzone:pzlast", function()
     circleStart(name, lastCreatedZone.radius, lastCreatedZone.useZ)
   end
   drawZone = true
+  disableControlKeyInput()
   drawThread()
 end)
 
