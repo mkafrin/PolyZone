@@ -37,7 +37,7 @@ local function _initDebug(zone, options)
   if not options.debugPoly and not options.debugBlip then
     return
   end
-  
+
   Citizen.CreateThread(function()
     local entity = zone.entity
     local shouldDraw = options.debugPoly
