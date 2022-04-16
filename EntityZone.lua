@@ -9,7 +9,7 @@ local function GetRotation(entity)
   return deg(atan2(fwdVector.y, fwdVector.x))
 end
 
-local function _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
+local function _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ)
   local min, max = dimensions[1], dimensions[2]
   local minX, minY, minZ, maxX, maxY, maxZ = min.x, min.y, min.z, max.x, max.y, max.z
 
@@ -24,11 +24,10 @@ local function _calculateMinAndMaxZ(entity, dimensions, scaleZ, offsetZ, pos)
   local p6 = GetOffsetFromEntityInWorldCoords(entity, maxX, minY, maxZ).z
   local p7 = GetOffsetFromEntityInWorldCoords(entity, maxX, maxY, maxZ).z
   local p8 = GetOffsetFromEntityInWorldCoords(entity, minX, maxY, maxZ).z
-  local minZ = pos.z - math.min(p1, p2, p3, p4, p5, p6, p7, p8)
-  minZ = minZ * scaleZ[1] - offsetZ[1]
-  local maxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8) - pos.z
-  maxZ = maxZ * scaleZ[2] + offsetZ[2]
-  return pos.z - minZ, pos.z + maxZ
+
+  local entityMinZ = math.min(p1, p2, p3, p4, p5, p6, p7, p8)
+  local entityMaxZ = math.max(p1, p2, p3, p4, p5, p6, p7, p8)
+  return BoxZone.calculateMinAndMaxZ(entityMinZ, entityMaxZ, scaleZ, offsetZ)
 end
 
 -- Initialization functions
@@ -61,7 +60,7 @@ function EntityZone:new(entity, options)
 
   local zone = BoxZone:new(pos, length, width, options)
   if options.useZ == true then
-    options.minZ, options.maxZ = _calculateMinAndMaxZ(entity, dimensions, zone.scaleZ, zone.offsetZ, pos)
+    options.minZ, options.maxZ = _calculateMinAndMaxZ(entity, dimensions, zone.scaleZ, zone.offsetZ)
   else
     options.minZ = nil
     options.maxZ = nil
@@ -89,7 +88,7 @@ function UpdateOffsets(entity, zone)
   zone.offsetRot = rot - 90.0
 
   if zone.useZ then
-    zone.minZ, zone.maxZ = _calculateMinAndMaxZ(entity, zone.dimensions, zone.scaleZ, zone.offsetZ, pos)
+    zone.minZ, zone.maxZ = _calculateMinAndMaxZ(entity, zone.dimensions, zone.scaleZ, zone.offsetZ)
   end
   if zone.debugBlip then SetBlipCoords(zone.debugBlip, pos.x, pos.y, 0.0) end
 end
