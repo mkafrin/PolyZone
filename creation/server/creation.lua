@@ -38,7 +38,7 @@ function parsePoly(zone)
   if Config.ConfigFormat then
     local printout = printoutHeader(zone.name)
     printout = printout .. "points = {\n"
-    for i=1, #zone.points do
+    for i = 1, #zone.points do
       if i ~= #zone.points then
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) .."),\n"
       else
@@ -50,7 +50,7 @@ function parsePoly(zone)
   else
     local printout = printoutHeader(zone.name)
     printout = printout .. "PolyZone:Create({\n"
-    for i=1, #zone.points do
+    for i = 1, #zone.points do
       if i ~= #zone.points then
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) .."),\n"
       else
@@ -102,13 +102,12 @@ function parseBox(zone)
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."), "
     printout = printout .. tostring(zone.length) .. ", "
     printout = printout .. tostring(zone.width) .. ", "
-    
-    printout = printout .. "{\n  name=\"" .. zone.name .. "\",\n  heading=" .. zone.heading .. ",\n  --debugPoly=true"
+    printout = printout .. "{\n  name = \"" .. zone.name .. "\",\n  heading = " .. zone.heading .. ",\n  --debugPoly = true"
     if zone.minZ then
-      printout = printout .. ",\n  minZ=" .. tostring(round(zone.minZ, 2))
+      printout = printout .. ",\n  minZ = " .. tostring(round(zone.minZ, 2))
     end
     if zone.maxZ then
-      printout = printout .. ",\n  maxZ=" .. tostring(round(zone.maxZ, 2))
+      printout = printout .. ",\n  maxZ = " .. tostring(round(zone.maxZ, 2))
     end
     printout = printout .. "\n})\n\n"
     return printout

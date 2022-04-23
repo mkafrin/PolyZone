@@ -1,12 +1,12 @@
 Config = Config or {}
-Config.ConfigFormat = false
+Config.ConfigFormatEnabled = false
 -- Default Format
 
 -- Name: TestBox | 2022-04-13T22:46:17Z
 -- BoxZone:Create(vector3(-344.16, -103.25, 39.02), 1, 1, {
---     name="TestBox",
---     heading=0,
---     --debugPoly=true
+--     name = "TestBox",
+--     heading = 0,
+--     --debugPoly = true
 --   })
 
 -- Name: TestCircle | 2022-04-13T22:46:39Z
@@ -35,14 +35,14 @@ Config.ConfigFormat = false
 -- width = 1,
 -- name = "TestBox",
 -- heading = 0,
--- debugPoly=true
+-- debugPoly = true
 
 -- Name: TestCircle | 2022-04-13T22:35:09Z
 -- coords = vector3(-342.92, -102.09, 39.02),
 -- radius = 1.0,
--- name="TestCircle",
--- useZ=false,
--- debugPoly=true
+-- name = "TestCircle",
+-- useZ = false,
+-- debugPoly = true
 
 -- Name: TestPoly | 2022-04-13T22:35:43Z
 -- points = {
@@ -50,7 +50,7 @@ Config.ConfigFormat = false
 --   vector2(-344.09732055664, -104.0821762085),
 --   vector2(-342.01580810547, -105.60903167725)
 -- },
--- name="TestPoly",
+-- name = "TestPoly",
 -- minZ = 39.015701293945,
 -- maxZ = 39.015705108643,
--- debugPoly=true
+-- debugPoly = true
