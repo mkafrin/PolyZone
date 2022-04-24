@@ -35,7 +35,7 @@ function printoutHeader(name)
 end
 
 function parsePoly(zone)
-  if Config.ConfigFormat then
+  if Config.ConfigFormatEnabled then
     local printout = printoutHeader(zone.name)
     printout = printout .. "points = {\n"
     for i = 1, #zone.points do
@@ -63,7 +63,7 @@ function parsePoly(zone)
 end
 
 function parseCircle(zone)
-  if Config.ConfigFormat then
+  if Config.ConfigFormatEnabled then
     local printout = printoutHeader(zone.name)
     printout = printout .. "coords = "
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."),\n"
@@ -81,7 +81,7 @@ function parseCircle(zone)
 end
 
 function parseBox(zone)
-  if Config.ConfigFormat then
+  if Config.ConfigFormatEnabled then
     local printout = printoutHeader(zone.name)
     printout = printout .. "coords = "
     printout = printout .. "vector3(" .. tostring(round(zone.center.x, 2)) .. ", " .. tostring(round(zone.center.y, 2))  .. ", " .. tostring(round(zone.center.z, 2)) .."),\n"
