@@ -148,13 +148,13 @@ function PolyZone:draw()
         _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
       end
     end
-  end
 
-  if #points > 2 then
-    local firstPoint = self:TransformPoint(points[1])
-    local lastPoint = self:TransformPoint(points[#points])
-    DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
-    _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
+    if #points > 2 then
+        local firstPoint = self:TransformPoint(points[1])
+        local lastPoint = self:TransformPoint(points[#points])
+        DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
+        _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
+    end
   end
 end
 
