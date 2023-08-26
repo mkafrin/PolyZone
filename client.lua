@@ -597,3 +597,27 @@ end
 function PolyZone:getBoundingBoxCenter()
   return self.center
 end
+
+function PolyZone:SetWallColor(r,g,b)
+  if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+    return
+  end
+  
+  self.debugColors.walls = {r,g,b}
+end
+
+function PolyZone:SetGridColor(r,g,b)
+  if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+    return
+  end
+
+  self.debugColors.grid = {r,g,b}
+end
+
+function PolyZone:SetOutlineColor(r,g,b)
+  if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+    return
+  end
+  
+  self.debugColors.outline = {r,g,b}
+end
