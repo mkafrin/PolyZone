@@ -126,35 +126,35 @@ function PolyZone:TransformPoint(point)
 end
 
 function PolyZone:draw()
-  if self.debugPoly or self.debugGrid then
-    local zDrawDist = 45.0
-    local oColor = self.debugColors.outline or defaultColorOutline
-    local oR, oG, oB = oColor[1], oColor[2], oColor[3]
-    local wColor = self.debugColors.walls or defaultColorWalls
-    local wR, wG, wB = wColor[1], wColor[2], wColor[3]
-    local plyPed = PlayerPedId()
-    local plyPos = GetEntityCoords(plyPed)
-    local minZ = self.minZ or plyPos.z - zDrawDist
-    local maxZ = self.maxZ or plyPos.z + zDrawDist
+  if not self.debugPoly and not self.debugGrid then return end
   
-    local points = self.points
-    for i=1, #points do
-      local point = self:TransformPoint(points[i])
-      DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
-  
-      if i < #points then
-        local p2 = self:TransformPoint(points[i+1])
-        DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
-        _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
-      end
-    end
+  local zDrawDist = 45.0
+  local oColor = self.debugColors.outline or defaultColorOutline
+  local oR, oG, oB = oColor[1], oColor[2], oColor[3]
+  local wColor = self.debugColors.walls or defaultColorWalls
+  local wR, wG, wB = wColor[1], wColor[2], wColor[3]
+  local plyPed = PlayerPedId()
+  local plyPos = GetEntityCoords(plyPed)
+  local minZ = self.minZ or plyPos.z - zDrawDist
+  local maxZ = self.maxZ or plyPos.z + zDrawDist
 
-    if #points > 2 then
-        local firstPoint = self:TransformPoint(points[1])
-        local lastPoint = self:TransformPoint(points[#points])
-        DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
-        _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
+  local points = self.points
+  for i=1, #points do
+    local point = self:TransformPoint(points[i])
+    DrawLine(point.x, point.y, minZ, point.x, point.y, maxZ, oR, oG, oB, 164)
+
+    if i < #points then
+      local p2 = self:TransformPoint(points[i+1])
+      DrawLine(point.x, point.y, maxZ, p2.x, p2.y, maxZ, oR, oG, oB, 184)
+      _drawWall(point, p2, minZ, maxZ, wR, wG, wB, 48)
     end
+  end
+
+  if #points > 2 then
+      local firstPoint = self:TransformPoint(points[1])
+      local lastPoint = self:TransformPoint(points[#points])
+      DrawLine(firstPoint.x, firstPoint.y, maxZ, lastPoint.x, lastPoint.y, maxZ, oR, oG, oB, 184)
+      _drawWall(firstPoint, lastPoint, minZ, maxZ, wR, wG, wB, 48)
   end
 end
 
