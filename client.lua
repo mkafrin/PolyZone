@@ -126,6 +126,8 @@ function PolyZone:TransformPoint(point)
 end
 
 function PolyZone:draw()
+  if not self.debugPoly and not self.debugGrid then return end
+  
   local zDrawDist = 45.0
   local oColor = self.debugColors.outline or defaultColorOutline
   local oR, oG, oB = oColor[1], oColor[2], oColor[3]
