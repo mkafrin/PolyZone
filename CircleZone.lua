@@ -2,7 +2,8 @@ CircleZone = {}
 -- Inherits from PolyZone
 setmetatable(CircleZone, { __index = PolyZone })
 
-function CircleZone:draw()
+function CircleZone:draw(forceDraw)
+  if not forceDraw and not self.debugPoly then return end
   local center = self.center
   local debugColor = self.debugColor
   local r, g, b = debugColor[1], debugColor[2], debugColor[3]
@@ -24,7 +25,7 @@ local function _initDebug(zone, options)
 
   Citizen.CreateThread(function()
     while not zone.destroyed do
-      zone:draw()
+      zone:draw(false)
       Citizen.Wait(0)
     end
   end)

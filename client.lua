@@ -125,8 +125,8 @@ function PolyZone:TransformPoint(point)
   return point
 end
 
-function PolyZone:draw()
-  if not self.debugPoly and not self.debugGrid then return end
+function PolyZone:draw(forceDraw)
+  if not forceDraw and not self.debugPoly and not self.debugGrid then return end
   
   local zDrawDist = 45.0
   local oColor = self.debugColors.outline or defaultColorOutline
@@ -158,8 +158,8 @@ function PolyZone:draw()
   end
 end
 
-function PolyZone.drawPoly(poly)
-  PolyZone.draw(poly)
+function PolyZone.drawPoly(poly, forceDraw)
+  PolyZone.draw(poly, forceDraw)
 end
 
 -- Debug drawing all grid cells that are completly within the polygon
@@ -434,7 +434,7 @@ local function _initDebug(poly, options)
 
   Citizen.CreateThread(function()
     while not poly.destroyed do
-      poly:draw()
+      poly:draw(false)
       if options.debugGrid and poly.lines then
         _drawGrid(poly)
       end

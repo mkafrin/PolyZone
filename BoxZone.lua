@@ -96,7 +96,7 @@ local function _initDebug(zone, options)
 
   Citizen.CreateThread(function()
     while not zone.destroyed do
-      zone:draw()
+      zone:draw(false)
       Citizen.Wait(0)
     end
   end)
