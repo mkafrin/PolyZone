@@ -90,12 +90,12 @@ local function _getGridCell(pos)
 end
 
 
-function ComboZone:draw(forceDraw)
+function ComboZone:draw()
   local zones = self.zones
   for i=1, #zones do
     local zone = zones[i]
     if zone and not zone.destroyed then
-      zone:draw(forceDraw)
+      zone:draw()
     end
   end
 end
@@ -106,10 +106,10 @@ local function _initDebug(zone, options)
   if not options.debugPoly then
     return
   end
-
+  
   Citizen.CreateThread(function()
     while not zone.destroyed do
-      zone:draw(false)
+      zone:draw()
       Citizen.Wait(0)
     end
   end)
@@ -157,7 +157,7 @@ function ComboZone:getZones(point)
   if not self.useGrid then
     return self.zones
   end
-
+  
   local grid = self.grid
   local x, y = _getGridCell(point)
   local row = grid[y]
