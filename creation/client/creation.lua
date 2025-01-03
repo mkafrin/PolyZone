@@ -59,6 +59,7 @@ AddEventHandler("polyzone:pzcreate", function(zoneType, name, args)
   end
   createdZoneType = zoneType
   drawZone = true
+  disableControlKeyInput()
   drawThread()
 end)
 
@@ -124,6 +125,7 @@ AddEventHandler("polyzone:pzlast", function()
     circleStart(name, lastCreatedZone.radius, lastCreatedZone.useZ)
   end
   drawZone = true
+  disableControlKeyInput()
   drawThread()
 end)
 

@@ -2,24 +2,22 @@ local function handleInput(useZ, heading, length, width, center)
   if not useZ then
     local scaleDelta, headingDelta = 0.2, 5
     BlockWeaponWheelThisFrame()
-    DisableControlAction(0, 36, true)
+    
     if IsDisabledControlPressed(0, 36) then -- ctrl held down
       scaleDelta, headingDelta = 0.05, 1
     end
 
-    DisableControlAction(0, 81, true)
-    if IsDisabledControlJustPressed(0, 81) then
-      if IsControlPressed(0, 19) then -- alt held down
+    if IsDisabledControlJustPressed(0, 81) then -- scroll wheel down just pressed
+      if IsDisabledControlPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width - scaleDelta), center
       end
-      if IsControlPressed(0, 21) then -- shift held down
+      if IsDisabledControlPressed(0, 21) then -- shift held down
         return heading, math.max(0.0, length - scaleDelta), width, center
       end
       return (heading - headingDelta) % 360, length, width, center
     end
     
-    DisableControlAction(0, 99, true)
-    if IsDisabledControlJustPressed(0, 99) then
+    if IsDisabledControlJustPressed(0, 99) then -- scroll wheel up just pressed
       if IsControlPressed(0, 19) then -- alt held down
         return heading, length, math.max(0.0, width + scaleDelta), center
       end
@@ -38,14 +36,12 @@ end
 
 function handleZ(minZ, maxZ)
   local delta = 0.2
-  DisableControlAction(0, 36, true)
   if IsDisabledControlPressed(0, 36) then -- ctrl held down
     delta = 0.05
   end
 
   BlockWeaponWheelThisFrame()
-  DisableControlAction(0, 81, true)
-  if IsDisabledControlJustPressed(0, 81) then
+  if IsDisabledControlJustPressed(0, 81) then -- scroll wheel down just pressed
     if IsControlPressed(0, 19) then -- alt held down
       return minZ - delta, maxZ
     end
@@ -55,8 +51,7 @@ function handleZ(minZ, maxZ)
     return minZ - delta, maxZ - delta
   end
   
-  DisableControlAction(0, 99, true)
-  if IsDisabledControlJustPressed(0, 99) then
+  if IsDisabledControlJustPressed(0, 99) then -- scroll wheel up just pressed
     if IsControlPressed(0, 19) then -- alt held down
       return minZ + delta, maxZ
     end

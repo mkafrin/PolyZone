@@ -26,6 +26,24 @@ function GetUserInput(windowTitle, defaultText, maxInputLength)
   end
 end
 
+function disableControlKeyInput()
+  Citizen.CreateThread(function()
+    while drawZone do
+      DisableControlAction(0, 36, true)   -- Ctrl
+      DisableControlAction(0, 19, true)   -- Alt
+      DisableControlAction(0, 20, true)   -- 'Z'
+      DisableControlAction(0, 21, true)   -- Shift
+      DisableControlAction(0, 81, true)   -- Scroll Wheel Down
+      DisableControlAction(0, 99, true)   -- Scroll Wheel Up
+      DisableControlAction(0, 172, true)  -- Arrow Up
+      DisableControlAction(0, 173, true)  -- Arrow Down
+      DisableControlAction(0, 174, true)  -- Arrow Left
+      DisableControlAction(0, 175, true)  -- Arrow Right
+      Wait(0)
+    end
+  end)
+end
+
 function handleArrowInput(center, heading)
   delta = 0.05
   DisableControlAction(0, 36, true)
