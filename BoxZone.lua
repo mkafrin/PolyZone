@@ -95,7 +95,7 @@ local function _initDebug(zone, options)
   end
   Citizen.CreateThread(function()
     while not zone.destroyed do
-      zone:draw()
+      zone:draw(false)
       Citizen.Wait(0)
     end
   end)
@@ -115,6 +115,10 @@ function BoxZone:new(center, length, width, options)
   local min = points[1]
   local max = points[3]
   local size = max - min
+
+  local minZ, maxZ = BoxZone.calculateMinAndMaxZ(options.minZ, options.maxZ, scaleZ, offsetZ)
+  options.minZ = minZ
+  options.maxZ = maxZ
 
   -- Box Zones don't use the grid optimization because they are already rectangles/cubes
   options.useGrid = false
@@ -153,7 +157,7 @@ end
 function BoxZone:isPointInside(point)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
-    return false 
+    return false
   end
 
   local startPos = self.startPos
