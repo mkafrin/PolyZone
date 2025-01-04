@@ -1,4 +1,5 @@
 fx_version 'cerulean'
+games { 'gta5' }
 
 description 'Define zones of different shapes and test whether a point is inside or outside of the zone'
 version '2.6.3'
@@ -9,7 +10,8 @@ client_scripts {
   'EntityZone.lua',
   'CircleZone.lua',
   'ComboZone.lua',
-  'creation/client/*.lua'
+  'creation/*.lua',
+  'creation/client/*.lua',
 }
 
 server_scripts {
