@@ -137,7 +137,6 @@ function PolyZone:draw(forceDraw)
   local plyPos = GetEntityCoords(plyPed)
   local minZ = self.minZ or plyPos.z - zDrawDist
   local maxZ = self.maxZ or plyPos.z + zDrawDist
-  
   local points = self.points
   for i=1, #points do
     local point = self:TransformPoint(points[i])
@@ -288,7 +287,6 @@ function _isGridCellInsidePoly(cellX, cellY, poly)
       end
     end
   end
-  
   return true
 end
 
@@ -431,7 +429,6 @@ local function _initDebug(poly, options)
   if not debugEnabled then
     return
   end
-  
   Citizen.CreateThread(function()
     while not poly.destroyed do
       poly:draw(false)
@@ -492,7 +489,7 @@ end
 function PolyZone:isPointInside(point)
   if self.destroyed then
     print("[PolyZone] Warning: Called isPointInside on destroyed zone {name=" .. self.name .. "}")
-    return false 
+    return false
   end
 
   return _pointInPoly(point, self)
