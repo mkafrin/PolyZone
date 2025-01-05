@@ -1,28 +1,22 @@
 RegisterNetEvent("polyzone:printPoly")
 AddEventHandler("polyzone:printPoly", function(zone)
-  file = io.open('polyzone_created_zones.txt', "a")
-  io.output(file)
-  local output = parsePoly(zone)
-  io.write(output)
-  io.close(file)
+  local created_zones = LoadResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt") or ""
+  local output = created_zones .. parsePoly(zone)
+  SaveResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt", output, -1)
 end)
 
 RegisterNetEvent("polyzone:printCircle")
 AddEventHandler("polyzone:printCircle", function(zone)
-  file = io.open('polyzone_created_zones.txt', "a")
-  io.output(file)
-  local output = parseCircle(zone)
-  io.write(output)
-  io.close(file)
+  local created_zones = LoadResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt") or ""
+  local output = created_zones .. parseCircle(zone)
+  SaveResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt", output, -1)
 end)
 
 RegisterNetEvent("polyzone:printBox")
 AddEventHandler("polyzone:printBox", function(zone)
-  file = io.open('polyzone_created_zones.txt', "a")
-  io.output(file)
-  local output = parseBox(zone)
-  io.write(output)
-  io.close(file)
+  local created_zones = LoadResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt") or ""
+  local output = created_zones .. parseBox(zone)
+  SaveResourceFile(GetCurrentResourceName(), "polyzone_created_zones.txt", output, -1)
 end)
 
 function round(num, numDecimalPlaces)
@@ -31,7 +25,7 @@ function round(num, numDecimalPlaces)
 end
 
 function printoutHeader(name)
-  return "--Name: " .. name .. " | " .. os.date("!%Y-%m-%dT%H:%M:%SZ\n")
+  return "-- Name: " .. name .. " | " .. os.date("!%Y-%m-%dT%H:%M:%SZ\n")
 end
 
 function parsePoly(zone)
