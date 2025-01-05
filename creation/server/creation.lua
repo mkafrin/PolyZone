@@ -39,7 +39,7 @@ function parsePoly(zone)
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) ..")\n"
       end
     end
-    printout = printout .. "},\nname = \"" .. zone.name .. "\",\n--minZ = " .. zone.minZ .. ",\n--maxZ = " .. zone.maxZ .. ",\n--debugPoly = true\n\n"
+    printout = printout .. "},\nname = \"" .. zone.name .. "\",\nminZ = " .. zone.minZ .. ",\nmaxZ = " .. zone.maxZ .. ",\n--debugPoly = true\n\n"
     return printout
   else
     local printout = printoutHeader(zone.name)
@@ -51,7 +51,7 @@ function parsePoly(zone)
         printout = printout .. "  vector2(" .. tostring(zone.points[i].x) .. ", " .. tostring(zone.points[i].y) ..")\n"
       end
     end
-    printout = printout .. "}, {\n  name = \"" .. zone.name .. "\",\n  --minZ = " .. zone.minZ .. ",\n  --maxZ = " .. zone.maxZ .. "\n})\n\n"
+    printout = printout .. "}, {\n  name = \"" .. zone.name .. "\",\n  minZ = " .. zone.minZ .. ",\n  maxZ = " .. zone.maxZ .. "\n})\n\n"
     return printout
   end
 end
