@@ -25,7 +25,7 @@ function round(num, numDecimalPlaces)
 end
 
 function printoutHeader(name)
-  return "-- Name: " .. name .. " | " .. os.date("!%Y-%m-%dT%H:%M:%SZ\n")
+  return "-- Name: " .. name .. " | " .. os.date("%Y-%m-%dT%H:%M:%SZ\n")
 end
 
 function parsePoly(zone)
