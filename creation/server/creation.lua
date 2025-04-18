@@ -25,7 +25,9 @@ function round(num, numDecimalPlaces)
 end
 
 function printoutHeader(name)
-  return "-- Name: " .. name .. " | " .. os.date("!%Y-%m-%dT%H:%M:%SZ\n")
+  local header = "-- Name: " .. name .. " | " .. os.date("!%Y-%m-%dT%H:%M:%SZ\n")
+  header = string.gsub(header, "\0", "")
+  return header
 end
 
 function parsePoly(zone)
